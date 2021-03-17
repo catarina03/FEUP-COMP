@@ -6,19 +6,20 @@ options
 PARSER_BEGIN(Jmm)
 
 
-public class Jmm
+public class Jmm{
 
-   //private int errorsCounter = 0;
-{
-    public static void main(String args[]) throws ParseException {
-      	System.out.println("Write an arithmetic expression:");
-		Jmm myJmm = new Jmm(System.in);
-		SimpleNode root = myJmm.Program(); // returns reference to root node
-        	
-		root.dump(""); // prints the tree on the screen
+   public int errorCounter = 0;
 
-		//System.out.println("Expression value: "+myJmm.eval(root));
-    }
+   public static void main(String args[]) throws ParseException {
+      System.out.println("Write an arithmetic expression:");
+      Jmm myJmm = new Jmm(System.in);
+      //SimpleNode root = myJmm.Program(); // returns reference to root node
+      SimpleNode root = myJmm.While(); // returns reference to root node
+         
+      root.dump(""); // prints the tree on the screen
+
+      //System.out.println("Expression value: "+myJmm.eval(root));
+   }
 	
 }
 
@@ -26,13 +27,13 @@ PARSER_END(Jmm)
 
 SKIP :
 {
-	" " | "\r" | "\t"
+	" " | "\r" | "\t" | "\n"
 }
 
 TOKEN:
 {
    <INTEGER: (["0"-"9"])+ >
-   |  <LF: "\n" >
+  // |  <LF: "\n" >
    |  <IF: "if" >
    |  <ELSE: "else" >
    |  <WHILE: "while" >
@@ -79,6 +80,9 @@ TOKEN:
 
 SimpleNode Program(): {}
 {
+   //ImportDeclaration() ClassDeclaration() <EOF> 
+
+   
    //this.errorsCounter = 0;
    try {
       ImportDeclaration() ClassDeclaration() <EOF> 
@@ -86,6 +90,7 @@ SimpleNode Program(): {}
       //this.errorsCounter++;
       //if(this.errorsCounter == 10) //END PROGRAM
    }
+   
 
    {return jjtThis;} // Java code inside brackets
 }
@@ -146,7 +151,7 @@ void StatementWithoutID(): {}
 
 void Condition(): {}
 {
-   <RPAR> Expression() <LPAR>
+   <LPAR> Expression() <RPAR>
 }
 
 void IfElse(): {}
@@ -154,9 +159,34 @@ void IfElse(): {}
    <IF> Condition() Statement() <ELSE> Statement()
 }
 
-void While(): {}
+SimpleNode While(): {}
 {
-   <WHILE> Condition() Statement()
+   <WHILE>
+   try {
+      <LPAR> Expression() <RPAR>
+   } catch (Exception e) {
+      //TODO: handle exception
+      this.errorCounter++;
+      System.out.println(this.errorCounter);
+
+      //e.printStackTrace();
+      System.out.println("Exception on WHILE CONDITION caught.");
+      
+      error_skipto(RPAR);
+
+      if(this.errorCounter == 10){
+         throw e;
+      }
+
+
+   }
+   Statement()
+
+   //Just for testing
+   <EOF>
+
+
+   {return jjtThis;} // Java code inside brackets
 }
 
 
@@ -335,4 +365,27 @@ void ExpressionTerminalWithoutID(): {}
       )
       | <NOT> Expression() 
       | <LPAR> Expression() <RPAR>
+}
+
+
+JAVACODE
+void error_skipto(int kind) {
+   //ParseException e = generateParseException();  // generate the exception object
+   //System.out.println(e.toString());  // print the error message
+  
+   Token t;
+   // consume tokens all the way up to a token of "kind" - use a do-while loop
+   // rather than a while because the current token is the one immediately before
+   // the erroneous token (in our case the token immediately before what should
+   // have been "if"/"while".
+   do {
+      t = getNextToken();
+
+      System.out.println(t.image);
+
+      if(t.kind == LPAR){
+         error_skipto(RPAR);
+      }
+   }
+   while (t.kind != kind && t.kind != EOF);
 }
