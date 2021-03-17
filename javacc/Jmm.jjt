@@ -1,0 +1,338 @@
+options
+{
+    LOOKAHEAD=1;
+}
+
+PARSER_BEGIN(Jmm)
+
+
+public class Jmm
+
+   //private int errorsCounter = 0;
+{
+    public static void main(String args[]) throws ParseException {
+      	System.out.println("Write an arithmetic expression:");
+		Jmm myJmm = new Jmm(System.in);
+		SimpleNode root = myJmm.Program(); // returns reference to root node
+        	
+		root.dump(""); // prints the tree on the screen
+
+		//System.out.println("Expression value: "+myJmm.eval(root));
+    }
+	
+}
+
+PARSER_END(Jmm)
+
+SKIP :
+{
+	" " | "\r" | "\t"
+}
+
+TOKEN:
+{
+   <INTEGER: (["0"-"9"])+ >
+   |  <LF: "\n" >
+   |  <IF: "if" >
+   |  <ELSE: "else" >
+   |  <WHILE: "while" >
+   |  <PUBLIC: "public" >
+   |  <NEW: "new" >
+   |  <INT: "int" >
+   |  <TRUE: "true" >
+   |  <FALSE: "false" >
+   |  <THIS: "this" >
+   |  <VOID: "void" >
+   |  <MAIN: "main" >
+   |  <STRING: "String" >
+   |  <CLASS: "class" >
+   |  <STATIC: "static" >
+   |  <LENGTH: "length" >
+   |  <RETURN: "return" >
+   |  <IMPORT: "import" >
+   |  <BOOLEAN: "boolean" >
+   |  <EXTENDS: "extends" >
+   |  <LBRACKET: "{" >
+   |  <RBRACKET: "}" >
+   |  <LPAR: "(" >
+   |  <RPAR: ")" >
+   |  <LSQRBRACKET: "[" >
+   |  <RSQRBRACKET: "]" >
+   |  <SEMICOLON: ";" >
+   |  <COMMA: "," >
+   |  <EQUALS: "=" >
+   |  <AND: "&&" >
+   |  <LESS: "<" >
+   |  <PLUS: "+" >
+   |  <MINUS: "-" >
+   |  <MUL: "*" >
+   |  <DIV: "/" >
+   |  <DOT: "." >
+   |  <NOT: "!" >
+   |  <INLINECOMMENT: "//" >
+   |  <STARTCOMMENTBLOCK: "/*" >
+   |  <ENDCOMMENTBLOCK: "*/" >
+   |  <IDENTIFIEROBJECT: ["A"-"Z"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
+   |  <IDENTIFIER: ["a"-"z", "_", "$"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
+
+}
+
+SimpleNode Program(): {}
+{
+   //this.errorsCounter = 0;
+   try {
+      ImportDeclaration() ClassDeclaration() <EOF> 
+   } catch(Exception e) {
+      //this.errorsCounter++;
+      //if(this.errorsCounter == 10) //END PROGRAM
+   }
+
+   {return jjtThis;} // Java code inside brackets
+}
+
+void ImportDeclaration(): {}
+{
+   ( <IMPORT> <IDENTIFIER> (<DOT> (<IDENTIFIER> | <IDENTIFIEROBJECT>) )* <SEMICOLON> )*
+}
+
+void ClassDeclaration(): {}
+{
+   <CLASS> <IDENTIFIEROBJECT> ( <EXTENDS> <IDENTIFIEROBJECT> )? <LBRACKET> ( VarDeclaration() )* ( MethodDeclaration() )* <RBRACKET>
+}
+
+void VarDeclaration(): {}
+{
+   Type() <IDENTIFIER> <SEMICOLON>
+}
+
+void MethodDeclaration(): {}
+{
+   <PUBLIC> 
+   ( Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET> ( VarDeclaration() )* ( Statement() )* <RETURN> Expression() <SEMICOLON> <RBRACKET> )
+   | 
+   ( <STATIC> <VOID> <MAIN> <LPAR> <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> <RPAR> <LBRACKET> ( VarDeclaration() )* ( Statement() )* <RBRACKET> )
+}
+
+void Type(): {}
+{
+   <INT> ( <LSQRBRACKET> <RSQRBRACKET> )?
+   | <BOOLEAN>
+   | <IDENTIFIEROBJECT>
+}
+
+
+void Statement(): {}
+{
+   StatementWithID() | StatementWithoutID()
+}
+
+void StatementWithID(): {}
+{
+   <IDENTIFIER>   
+   (  
+      ( <EQUALS> Expression() <SEMICOLON> )
+   | 
+      ( <LSQRBRACKET> Expression() <RSQRBRACKET> <EQUALS> Expression() <SEMICOLON> )
+   )
+}
+
+void StatementWithoutID(): {}
+{
+   While() 
+   | IfElse()
+   | <LBRACKET> ( Statement() )* <RBRACKET>
+   | ExpressionWithoutID() <SEMICOLON>
+}
+
+void Condition(): {}
+{
+   <RPAR> Expression() <LPAR>
+}
+
+void IfElse(): {}
+{
+   <IF> Condition() Statement() <ELSE> Statement()
+}
+
+void While(): {}
+{
+   <WHILE> Condition() Statement()
+}
+
+
+//LEFTMOST SYMBOL CAN BE IDENTIFIER
+
+void Expression(): {}
+{
+   ExpressionSwitchFromAND() ExpressionAND()
+}
+
+void ExpressionAND():{}         
+{
+   <AND> ExpressionSwitchFromAND() ExpressionAND() 
+   | 
+   {}
+}
+
+void ExpressionSwitchFromAND():{}      
+{
+   ExpressionSwitchFromLESS() ExpressionLESS() 
+}
+
+void ExpressionLESS():{}           
+{
+   <LESS> ExpressionSwitchFromLESS() ExpressionLESS() 
+   | 
+   {}
+}
+
+void ExpressionSwitchFromLESS():{}            
+{
+   ExpressionSwitchFromPLUS() ExpressionPLUS()
+}
+
+void ExpressionPLUS():{}            
+{
+   <PLUS> ExpressionSwitchFromPLUS() ExpressionPLUS() 
+   | 
+   {}
+}
+
+void ExpressionSwitchFromPLUS():{}      
+{
+   ExpressionSwitchFromMINUS() ExpressionMINUS() 
+}
+
+
+void ExpressionMINUS():{}           
+{
+   <MINUS> ExpressionSwitchFromMINUS() ExpressionMINUS() 
+   | 
+   {}
+}
+
+void ExpressionSwitchFromMINUS():{}      
+{
+   ExpressionSwitchFromMUL() ExpressionMUL() 
+}
+
+void ExpressionMUL():{}              
+{
+   <MUL> ExpressionSwitchFromMUL() ExpressionMUL() 
+   | 
+   {}
+}
+
+void ExpressionSwitchFromMUL():{}     
+{
+   ExpressionSwitchFromDIV() ExpressionDIV() 
+}
+
+void ExpressionDIV():{}                
+{
+   <DIV> ExpressionSwitchFromDIV() ExpressionDIV() 
+   | 
+   {}
+}
+
+void ExpressionSwitchFromDIV(): {}
+{
+   ExpressionSwitchFromDOT() ExpressionDOT()
+}
+
+void ExpressionDOT(): {}
+{
+   <DOT> 
+   ( 
+      ( <LENGTH> )
+   | 
+      ( <IDENTIFIER> <LPAR> 
+         ( Expression() 
+            ( <COMMA> Expression() )* 
+         )? 
+         <RPAR> 
+      ) 
+   ) 
+   ExpressionArrayIndexing() ExpressionDOT()
+   | 
+   {}
+}
+
+void ExpressionSwitchFromDOT(): {}
+{
+   ExpressionTerminal() ExpressionArrayIndexing()
+}
+
+void ExpressionArrayIndexing():{}
+{
+   <LSQRBRACKET> Expression() <RSQRBRACKET> ExpressionArrayIndexing()
+   |
+   {}
+}
+
+
+//Expressions without ids
+void ExpressionWithoutID(): {}
+{
+    ExpressionSwitchFromANDWithoutID() ExpressionAND()
+}
+
+void ExpressionSwitchFromANDWithoutID(): {}
+{
+    ExpressionSwitchFromLESSWithoutID() ExpressionLESS()
+}
+
+void ExpressionSwitchFromLESSWithoutID(): {}
+{
+    ExpressionSwitchFromPLUSWithoutID() ExpressionPLUS()
+}
+
+void ExpressionSwitchFromPLUSWithoutID(): {}
+{
+    ExpressionSwitchFromMINUSWithoutID() ExpressionMINUS()
+}
+
+void ExpressionSwitchFromMINUSWithoutID(): {}
+{
+    ExpressionSwitchFromMULWithoutID() ExpressionMUL()
+}
+
+void ExpressionSwitchFromMULWithoutID(): {}
+{
+    ExpressionSwitchFromDIVWithoutID() ExpressionDIV()
+}
+
+void ExpressionSwitchFromDIVWithoutID(): {}
+{
+    ExpressionSwitchFromDOTWithoutID() ExpressionDOT()
+}
+
+void ExpressionSwitchFromDOTWithoutID(): {}
+{
+    ExpressionTerminalWithoutID() ExpressionArrayIndexing()
+}
+
+//TERMINAL BLOCKS
+
+void ExpressionTerminal(): {}
+{
+   ExpressionTerminalWithoutID()
+   |
+   <IDENTIFIER>
+}
+
+void ExpressionTerminalWithoutID(): {}
+{
+   <INTEGER>
+      | <TRUE>
+      | <FALSE>
+      | <THIS>
+      | <NEW> 
+      ( 
+         ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) 
+      | 
+         ( <IDENTIFIEROBJECT> <LPAR> <RPAR> ) 
+      )
+      | <NOT> Expression() 
+      | <LPAR> Expression() <RPAR>
+}
