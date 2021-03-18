@@ -18,7 +18,7 @@ public class Main implements JmmParser {
             	
     		root.dump(""); // prints the tree on the screen
     	
-    		return new JmmParserResult(root, new ArrayList<Report>());
+    		return new JmmParserResult(root, myJmm.reports);
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);
 		}
@@ -30,14 +30,18 @@ public class Main implements JmmParser {
             throw new RuntimeException("It's supposed to fail");
         }
 
+		JmmParserResult result;
+
 		// Copy of the code in parser function :)
 		try {
 		    Jmm myJmm = new Jmm(new StringReader(args[0]));
     		SimpleNode root = myJmm.While(); // returns reference to root node
-            	
+		
     		root.dump(""); // prints the tree on the screen
     	
-    		//return new JmmParserResult(root, new ArrayList<Report>());
+    		result = new JmmParserResult(root, myJmm.reports);
+			System.out.println(result.getReports().toString());
+
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);
 		}

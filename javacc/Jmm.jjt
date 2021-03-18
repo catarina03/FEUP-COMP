@@ -5,10 +5,14 @@ options
 
 PARSER_BEGIN(Jmm)
 
+import pt.up.fe.comp.jmm.report.*;
+import java.util.ArrayList;
 
 public class Jmm{
 
    public int errorCounter = 0;
+   public ArrayList<Report> reports = new ArrayList<Report>();
+
 
    public static void main(String args[]) throws ParseException {
       System.out.println("Write an arithmetic expression:");
@@ -20,6 +24,13 @@ public class Jmm{
 
       //System.out.println("Expression value: "+myJmm.eval(root));
    }
+
+   //Not needed bc reports is public
+   /*
+   public ArrayList<Report> getReports(){
+      return reports;
+   }
+   */
 	
 }
 
@@ -164,9 +175,10 @@ SimpleNode While(): {}
    <WHILE>
    try {
       <LPAR> Expression() <RPAR>
-   } catch (Exception e) {
+   } catch (ParseException e) {
       //TODO: handle exception
       this.errorCounter++;
+      reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, getToken(0).beginLine ,e.getMessage()));
       System.out.println(this.errorCounter);
 
       //e.printStackTrace();
