@@ -91,15 +91,9 @@ TOKEN:
 
 SimpleNode Program(): {}
 {
-   //ImportDeclaration() ClassDeclaration() <EOF> 
-
-   
-   //this.errorsCounter = 0;
    try {
       ImportDeclaration() ClassDeclaration() <EOF> 
    } catch(Exception e) {
-      //this.errorsCounter++;
-      //if(this.errorsCounter == 10) //END PROGRAM
    }
    
 
@@ -111,48 +105,48 @@ void ImportDeclaration(): {}
    ( <IMPORT> <IDENTIFIER> (<DOT> (<IDENTIFIER> | <IDENTIFIEROBJECT>) )* <SEMICOLON> )*
 }
 
-void ClassDeclaration(): {}
+void ClassDeclaration() #Class : {}
 {
-   <CLASS> <IDENTIFIEROBJECT> ( <EXTENDS> <IDENTIFIEROBJECT> )? <LBRACKET> ( VarDeclaration() )* ( MethodDeclaration() )* <RBRACKET>
+   <CLASS> <IDENTIFIEROBJECT> ( <EXTENDS> <IDENTIFIEROBJECT> #Extends )? <LBRACKET> ( VarDeclaration() )* ( MethodDeclaration() )* <RBRACKET>
 }
 
-void VarDeclaration(): {}
+void VarDeclaration() #VarDeclaration: {}
 {
    Type() <IDENTIFIER> <SEMICOLON>
 }
 
-void MethodDeclaration(): {}
+void MethodDeclaration() #MethodDeclaration : {}
 {
    <PUBLIC> 
-   ( Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )* )? <RPAR> <LBRACKET> ( VarDeclaration() )* ( Statement() )* <RETURN> Expression() <SEMICOLON> <RBRACKET> )
+   ( Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )* )? #Parameters <RPAR> <LBRACKET> ( VarDeclaration() )* ( Statement() )* #MethodBody <RETURN> Expression() #Return <SEMICOLON> <RBRACKET> )
    | 
-   ( <STATIC> <VOID> <MAIN> <LPAR> <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> <RPAR> <LBRACKET> ( VarDeclaration() )* ( Statement() )* <RBRACKET> )
+   ( <STATIC> <VOID> <MAIN> #Main <LPAR> <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> #VarDeclaration <RPAR> #Parameters <LBRACKET> ( VarDeclaration() )* ( Statement() )* #MainBody <RBRACKET> )
 }
 
-void Type(): {}
+void Type(): #void {}
 {
-   <INT> ( <LSQRBRACKET> <RSQRBRACKET> )?
-   | <BOOLEAN>
-   | <IDENTIFIEROBJECT>
+   <INT> ( <LSQRBRACKET> <RSQRBRACKET> )? #IntArrayVar
+   | <BOOLEAN> #BooleanVar
+   | <IDENTIFIEROBJECT> #TypeID
 }
 
 
-void Statement(): {}
+void Statement() #void: {}
 {
    StatementWithID() | StatementWithoutID()
 }
 
-void StatementWithID(): {}
+void StatementWithID() #void : {}
 {
    <IDENTIFIER>   
    (  
-      ( <EQUALS> Expression() <SEMICOLON> )
+      ( <EQUALS> Expression() <SEMICOLON> #VarAssignment )
    | 
-      ( <LSQRBRACKET> Expression() <RSQRBRACKET> <EQUALS> Expression() <SEMICOLON> )
+      ( <LSQRBRACKET> Expression() <RSQRBRACKET> <EQUALS> Expression() <SEMICOLON> #ArrayAssignment )
    )
 }
 
-void StatementWithoutID(): {}
+void StatementWithoutID() #void : {}
 {
    While() 
    | IfElse()
@@ -160,17 +154,17 @@ void StatementWithoutID(): {}
    | ExpressionWithoutID() <SEMICOLON>
 }
 
-void Condition(): {}
+void Condition() #Condition: {}
 {
    <LPAR> Expression() <RPAR>
 }
 
-void IfElse(): {}
+void IfElse() #If : {}
 {
    <IF> Condition() Statement() <ELSE> Statement()
 }
 
-SimpleNode While(): {}
+SimpleNode While() #While : {}
 {
    <WHILE>
    try {
@@ -180,7 +174,6 @@ SimpleNode While(): {}
       reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, getToken(0).beginLine ,e.getMessage()));
       System.out.println(this.errorCounter);
 
-      //e.printStackTrace();
       System.out.println("Exception on WHILE CONDITION caught.");
       
       error_skipto(RPAR);
@@ -193,24 +186,20 @@ SimpleNode While(): {}
    }
    Statement()
 
-   //Just for testing
-   <EOF>
-
 
    {return jjtThis;} // Java code inside brackets
 }
 
 
-//LEFTMOST SYMBOL CAN BE IDENTIFIER
 
-void Expression(): {}
+void Expression() #void :{}
 {
    ExpressionSwitchFromAND() ExpressionAND()
 }
 
-void ExpressionAND():{}         
+void ExpressionAND() #void :{}         
 {
-   <AND> ExpressionSwitchFromAND() ExpressionAND() 
+   <AND> ExpressionSwitchFromAND() #And ExpressionAND() 
    | 
    {}
 }
@@ -220,34 +209,34 @@ void ExpressionSwitchFromAND() #void: {}
    ExpressionSwitchFromLESS() ExpressionLESS() 
 }
 
-void ExpressionLESS():{}           
+void ExpressionLESS() #void :{}           
 {
-   <LESS> ExpressionSwitchFromLESS() ExpressionLESS() 
+   <LESS> ExpressionSwitchFromLESS() #Less ExpressionLESS() 
    | 
    {}
 }
 
-void ExpressionSwitchFromLESS() #void: {}         
+void ExpressionSwitchFromLESS() #void : {}         
 {
    ExpressionSwitchFromPLUS() ExpressionPLUS()
 }
 
-void ExpressionPLUS():{}            
+void ExpressionPLUS() #void :{}            
 {
-   <PLUS> ExpressionSwitchFromPLUS() ExpressionPLUS() 
+   <PLUS> ExpressionSwitchFromPLUS() #Plus ExpressionPLUS() 
    | 
    {}
 }
 
-void ExpressionSwitchFromPLUS() #void:{}      
+void ExpressionSwitchFromPLUS() #void :{}      
 {
    ExpressionSwitchFromMINUS() ExpressionMINUS() 
 }
 
 
-void ExpressionMINUS():{}           
+void ExpressionMINUS() #void :{}           
 {
-   <MINUS> ExpressionSwitchFromMINUS() ExpressionMINUS() 
+   <MINUS> ExpressionSwitchFromMINUS() #Minus ExpressionMINUS() 
    | 
    {}
 }
@@ -257,9 +246,9 @@ void ExpressionSwitchFromMINUS() #void :{}
    ExpressionSwitchFromMUL() ExpressionMUL() 
 }
 
-void ExpressionMUL():{}              
+void ExpressionMUL() #void :{}              
 {
-   <MUL> ExpressionSwitchFromMUL() ExpressionMUL() 
+   <MUL> ExpressionSwitchFromMUL() #Mul ExpressionMUL() 
    | 
    {}
 }
@@ -269,9 +258,9 @@ void ExpressionSwitchFromMUL() #void :{}
    ExpressionSwitchFromDIV() ExpressionDIV() 
 }
 
-void ExpressionDIV():{}                
+void ExpressionDIV() #void :{}                
 {
-   <DIV> ExpressionSwitchFromDIV() ExpressionDIV() 
+   <DIV> ExpressionSwitchFromDIV() #Div ExpressionDIV() 
    | 
    {}
 }
@@ -293,7 +282,7 @@ void ExpressionDOT(): {}
          )? 
          <RPAR> 
       ) 
-   ) 
+   ) #DotMethodCall
    ExpressionArrayIndexing() ExpressionDOT()
    | 
    {}
@@ -304,16 +293,17 @@ void ExpressionSwitchFromDOT() #void: {}
    ExpressionTerminal() ExpressionArrayIndexing()
 }
 
-void ExpressionArrayIndexing():{}
+//TODO: verificar se esta anotação AST funciona!!! e fica no sítio correto
+void ExpressionArrayIndexing() #void :{}
 {
-   <LSQRBRACKET> Expression() <RSQRBRACKET> ExpressionArrayIndexing()
+   <LSQRBRACKET> Expression() <RSQRBRACKET> #ArrayAccess ExpressionArrayIndexing()
    |
    {}
 }
 
 
 //Expressions without ids
-void ExpressionWithoutID(): {}
+void ExpressionWithoutID() #void : {}
 {
     ExpressionSwitchFromANDWithoutID() ExpressionAND()
 }
@@ -353,28 +343,29 @@ void ExpressionSwitchFromDOTWithoutID() #void: {}
     ExpressionTerminalWithoutID() ExpressionArrayIndexing()
 }
 
+
 //TERMINAL BLOCKS
 
-void ExpressionTerminal(): {}
+void ExpressionTerminal() #void : {}
 {
    ExpressionTerminalWithoutID()
    |
    <IDENTIFIER>
 }
 
-void ExpressionTerminalWithoutID(): {}
+void ExpressionTerminalWithoutID() #void : {}
 {
    <INTEGER>
-      | <TRUE>
-      | <FALSE>
-      | <THIS>
+      | <TRUE> #BooleanTrue
+      | <FALSE>  #BooleanFalse
+      | <THIS> #This
       | <NEW> 
       ( 
-         ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) 
+         ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) #IntArrayVar   //TODO: verificar se esta anotação fica bem aqui (repetida em cima)
       | 
-         ( <IDENTIFIEROBJECT> <LPAR> <RPAR> ) 
-      )
-      | <NOT> Expression() 
+         ( <IDENTIFIEROBJECT> <LPAR> <RPAR> ) #TypeObject
+      ) #New
+      | <NOT> Expression() #Not
       | <LPAR> Expression() <RPAR>
 }
 
