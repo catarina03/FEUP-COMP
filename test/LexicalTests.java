@@ -1,138 +1,154 @@
-// package test;
+package test;
 
-// import static org.junit.Assert.assertEquals;
-// import org.junit.rules.ExpectedException;
-// import org.junit.Rule;
-// import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import org.junit.rules.ExpectedException;
+import org.junit.Rule;
+import org.junit.Test;
 
-// import pt.up.fe.comp.TestUtils;
-// import pt.up.fe.specs.util.SpecsIo;
+import pt.up.fe.comp.TestUtils;
+import pt.up.fe.specs.util.SpecsIo;
 
-// public class LexicalTests {
+import java.text.ParseException; 
 
-//     @Test
-//     public void testFindMaximum() {
-//         String jmmCode = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+public class LexicalTests {
 
-//     @Test
-//     public void testHelloWorld() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
+    @Test
+    public void testFindMaximum() {
+        String jmmCode = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
 
-//     @Test
-//     public void testLazySort() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/LazySort.jmm");
+    @Test
+    public void testGrammarFindMaximum() {
+        String jmmCode = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
 
-//     @Test
-//     public void testLife() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/Life.jmm");
+        TestUtils.parse(jmmCode);
+        System.out.flush();
+    }
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+    @Test
+    public void testHelloWorld() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
 
-//     @Test
-//     public void testMonteCarloPi() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm");
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+    // @Test
+    // public void testLazySort() {
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/LazySort.jmm");
 
-//     @Test
-//     public void testQuickSort() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/QuickSort.jmm");
+    //     assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    // }
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+    @Test
+    public void testLife() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/Life.jmm");
 
-//     @Test
-//     public void testSimple() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/Simple.jmm");
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+    @Test
+    public void testMonteCarloPi() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm");
 
-//     @Test
-//     public void testTicTacToe() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/TicTacToe.jmm");
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+    @Test
+    public void testQuickSort() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/QuickSort.jmm");
 
-//     @Test
-//     public void testWhileAndIf() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/WhileAndIF.jmm");
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
 
-//         assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
-//     }
+    @Test
+    public void testSimple() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/Simple.jmm");
+
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
+
+    @Test
+    public void testTicTacToe() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/TicTacToe.jmm");
+
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
+
+    @Test
+    public void testWhileAndIf() {
+        var jmmCode = SpecsIo.getResource("fixtures/public/WhileAndIF.jmm");
+
+        assertEquals("Program", TestUtils.parse(jmmCode).getRootNode().getKind());
+    }
 
 //     /*
 //      * Tests below this comment will fail
 //      */
 
-//      /*
-//     @Rule
-//     public final ExpectedException expectedException = ExpectedException.none();
+     
+    // @Rule
+    // public final ExpectedException expectedException = ExpectedException.none();
 
-//     @Test(expected = RuntimeException.class)
-//     public void testBlowUp() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/BlowUp.jmm");
 
-//         TestUtils.parse(jmmCode).getRootNode().getKind();
+    // @Test(expected = RuntimeException.class)
+    // public void testBlowUp() {
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/BlowUp.jmm");
 
-//         expectedException.expect(ParseException.class);
-//     }
+    //     TestUtils.parse(jmmCode).getRootNode().getKind();
 
-//     @Test(expected = RuntimeException.class)
-//     public void testCompleteWhileTest() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/CompleteWhileTest.jmm");
+    //     expectedException.expect(ParseException.class);
+    // }
 
-//         TestUtils.parse(jmmCode).getRootNode().getKind();
+    // @Test(expected = RuntimeException.class)
+    // public void testCompleteWhileTest() {
 
-//         expectedException.expect(ParseException.class);
-//     }
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/CompleteWhileTest.jmm");
+    
+    //     TestUtils.parse(jmmCode).getRootNode().getKind();
+    
+    //     expectedException.expect(ParseException.class);
 
-//     @Test(expected = RuntimeException.class)
-//     public void testLengthError() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/LengthError.jmm");
+    // }
 
-//         TestUtils.parse(jmmCode).getRootNode().getKind();
+    // @Test(expected = RuntimeException.class)
+    // public void testLengthError() {
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/LengthError.jmm");
 
-//         expectedException.expect(ParseException.class);
-//     }
+    //     TestUtils.parse(jmmCode).getRootNode().getKind();
 
-//     @Test(expected = RuntimeException.class)
-//     public void testMissingRightPar() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/MissingRightPar.jmm");
+    //     expectedException.expect(ParseException.class);
+    // }
 
-//         TestUtils.parse(jmmCode).getRootNode().getKind();
+    // @Test(expected = RuntimeException.class)
+    // public void testMissingRightPar() {
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/MissingRightPar.jmm");
 
-//         expectedException.expect(ParseException.class);
-//     }
+    //     TestUtils.parse(jmmCode).getRootNode().getKind();
 
-//     @Test(expected = RuntimeException.class)
-//     public void testMultipleSequential() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/MultipleSequential.jmm");
+    //     expectedException.expect(ParseException.class);
+    // }
 
-//         TestUtils.parse(jmmCode).getRootNode().getKind();
+    // @Test(expected = RuntimeException.class)
+    // public void testMultipleSequential() {
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/MultipleSequential.jmm");
 
-//         expectedException.expect(ParseException.class);
-//     }
+    //     TestUtils.parse(jmmCode).getRootNode().getKind();
 
-//     @Test(expected = RuntimeException.class)
-//     public void testNestedLoop() {
-//         var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/NestedLoop.jmm");
+    //     expectedException.expect(ParseException.class);
+    // }
 
-//         TestUtils.parse(jmmCode).getRootNode().getKind();
+    // @Test(expected = RuntimeException.class)
+    // public void testNestedLoop() {
+    //     var jmmCode = SpecsIo.getResource("fixtures/public/fail/syntactical/NestedLoop.jmm");
 
-//         expectedException.expect(ParseException.class);
-//     }
-//     */
-// }
+    //     TestUtils.parse(jmmCode).getRootNode().getKind();
+
+    //     expectedException.expect(ParseException.class);
+    // }
+    
+ }

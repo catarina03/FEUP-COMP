@@ -35,7 +35,7 @@ public class Main implements JmmParser {
 		// Copy of the code in parser function :)
 		try {
 		    Jmm myJmm = new Jmm(new StringReader(args[0]));
-    		SimpleNode root = myJmm.While(); // returns reference to root node
+    		SimpleNode root = myJmm.Program(); // returns reference to root node
 		
     		root.dump(""); // prints the tree on the screen
     	

@@ -38,11 +38,14 @@ PARSER_END(Jmm)
 
 SKIP :
 {
-	" " | "\r" | "\t" | "\n"
+	" " | "\r" | "\t" | "\n" | <"//"(~[ "\n", "\r" ]) * ("\n" | "\r" | "\r\n")>  
+   |  <"/*" (~["*"])* "*" ("*" | ~[ "*", "/" ](~["*"])* "*")* "/">
 }
 
+
+
 TOKEN:
-{
+{ 
    <INTEGER: (["0"-"9"])+ >
   // |  <LF: "\n" >
    |  <IF: "if" >
@@ -81,9 +84,9 @@ TOKEN:
    |  <DIV: "/" >
    |  <DOT: "." >
    |  <NOT: "!" >
-   |  <INLINECOMMENT: "//" >
-   |  <STARTCOMMENTBLOCK: "/*" >
-   |  <ENDCOMMENTBLOCK: "*/" >
+   // |  <INLINECOMMENT: "//" >
+   // |  <STARTCOMMENTBLOCK: "/*" >
+   // |  <ENDCOMMENTBLOCK: "*/" >
    |  <IDENTIFIEROBJECT: ["A"-"Z"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
    |  <IDENTIFIER: ["a"-"z", "_", "$"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
 
