@@ -176,7 +176,6 @@ SimpleNode While(): {}
    try {
       <LPAR> Expression() <RPAR>
    } catch (ParseException e) {
-      //TODO: handle exception
       this.errorCounter++;
       reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, getToken(0).beginLine ,e.getMessage()));
       System.out.println(this.errorCounter);
@@ -216,7 +215,7 @@ void ExpressionAND():{}
    {}
 }
 
-void ExpressionSwitchFromAND():{}      
+void ExpressionSwitchFromAND() #void: {}        
 {
    ExpressionSwitchFromLESS() ExpressionLESS() 
 }
@@ -228,7 +227,7 @@ void ExpressionLESS():{}
    {}
 }
 
-void ExpressionSwitchFromLESS():{}            
+void ExpressionSwitchFromLESS() #void: {}         
 {
    ExpressionSwitchFromPLUS() ExpressionPLUS()
 }
@@ -240,7 +239,7 @@ void ExpressionPLUS():{}
    {}
 }
 
-void ExpressionSwitchFromPLUS():{}      
+void ExpressionSwitchFromPLUS() #void:{}      
 {
    ExpressionSwitchFromMINUS() ExpressionMINUS() 
 }
@@ -253,7 +252,7 @@ void ExpressionMINUS():{}
    {}
 }
 
-void ExpressionSwitchFromMINUS():{}      
+void ExpressionSwitchFromMINUS() #void :{}      
 {
    ExpressionSwitchFromMUL() ExpressionMUL() 
 }
@@ -265,7 +264,7 @@ void ExpressionMUL():{}
    {}
 }
 
-void ExpressionSwitchFromMUL():{}     
+void ExpressionSwitchFromMUL() #void :{}     
 {
    ExpressionSwitchFromDIV() ExpressionDIV() 
 }
@@ -277,7 +276,7 @@ void ExpressionDIV():{}
    {}
 }
 
-void ExpressionSwitchFromDIV(): {}
+void ExpressionSwitchFromDIV() #void : {}
 {
    ExpressionSwitchFromDOT() ExpressionDOT()
 }
@@ -300,7 +299,7 @@ void ExpressionDOT(): {}
    {}
 }
 
-void ExpressionSwitchFromDOT(): {}
+void ExpressionSwitchFromDOT() #void: {}
 {
    ExpressionTerminal() ExpressionArrayIndexing()
 }
@@ -319,37 +318,37 @@ void ExpressionWithoutID(): {}
     ExpressionSwitchFromANDWithoutID() ExpressionAND()
 }
 
-void ExpressionSwitchFromANDWithoutID(): {}
+void ExpressionSwitchFromANDWithoutID() #void : {}
 {
     ExpressionSwitchFromLESSWithoutID() ExpressionLESS()
 }
 
-void ExpressionSwitchFromLESSWithoutID(): {}
+void ExpressionSwitchFromLESSWithoutID() #void : {}
 {
     ExpressionSwitchFromPLUSWithoutID() ExpressionPLUS()
 }
 
-void ExpressionSwitchFromPLUSWithoutID(): {}
+void ExpressionSwitchFromPLUSWithoutID() #void : {}
 {
     ExpressionSwitchFromMINUSWithoutID() ExpressionMINUS()
 }
 
-void ExpressionSwitchFromMINUSWithoutID(): {}
+void ExpressionSwitchFromMINUSWithoutID() #void : {}
 {
     ExpressionSwitchFromMULWithoutID() ExpressionMUL()
 }
 
-void ExpressionSwitchFromMULWithoutID(): {}
+void ExpressionSwitchFromMULWithoutID() #void : {}
 {
     ExpressionSwitchFromDIVWithoutID() ExpressionDIV()
 }
 
-void ExpressionSwitchFromDIVWithoutID(): {}
+void ExpressionSwitchFromDIVWithoutID() #void : {}
 {
     ExpressionSwitchFromDOTWithoutID() ExpressionDOT()
 }
 
-void ExpressionSwitchFromDOTWithoutID(): {}
+void ExpressionSwitchFromDOTWithoutID() #void: {}
 {
     ExpressionTerminalWithoutID() ExpressionArrayIndexing()
 }
