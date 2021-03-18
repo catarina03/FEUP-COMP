@@ -9,29 +9,163 @@ import java.io.StringReader;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.specs.util.SpecsIo;
 
-//import java.io.IOException;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
 
 
 public class ExampleTest {
 
 
-
+/*
     @Test
     public void testExpression() {		
-		assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());		
+		//assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
 
 	}
 
+ */
+
+
     @Test
-    public void testFile() {
+    public void testFileHello() {
         //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
 
-        String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
+        String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+    }
+
+
+    @Test
+    public void testFileLife() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/Life.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
         TestUtils.parse(jmmParser);
 
     }
+
+
+
+
+    @Test
+    public void testFileSimple() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/Simple.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+
+
+    @Test
+    public void testFileTicTacToe() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/TicTacToe.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+
+    @Test
+    public void testFileWhileAndIF() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/WhileAndIF.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+
+    @Test
+    public void testFileFindMaximum() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+    @Test
+    public void testFileFindLazysort() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/Lazysort.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+    @Test
+    public void testFileMonteCarloPi() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+    @Test
+    public void testFileQuickSort() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/QuickSort.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+    @Test
+    public void testFileBlowUp() {
+        //assertEquals("Program", TestUtils.parse("2+3\n").getRootNode().getKind());
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/fail/syntactical/BlowUp.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+
+
+
+
+
 
 /*
     @Test

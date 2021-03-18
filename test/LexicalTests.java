@@ -13,6 +13,7 @@ import java.text.ParseException;
 
 public class LexicalTests {
 
+    /*
     @Test
     public void testFindMaximum() {
         String jmmCode = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
@@ -150,5 +151,6 @@ public class LexicalTests {
 
     //     expectedException.expect(ParseException.class);
     // }
+
     
  }
