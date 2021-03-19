@@ -85,9 +85,7 @@ TOKEN:
    |  <DOT: "." >
    |  <NOT: "!" >
    | <IDENTIFIER: ["a"-"z", "A"-"Z", "_", "$"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
-   // |  <INLINECOMMENT: "//" >
-   // |  <STARTCOMMENTBLOCK: "/*" >
-   // |  <ENDCOMMENTBLOCK: "*/" >
+   
  //  |  <IDENTIFIEROBJECT: ["A"-"Z"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
    //|  <IDENTIFIER: ["a"-"z", "_", "$"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
 
@@ -104,27 +102,27 @@ SimpleNode Program(): {}
    {return jjtThis;} // Java code inside brackets
 }
 
-void ImportDeclaration(): {}
+void ImportDeclaration() #Import : {Token t;}
 {
-   ( <IMPORT> <IDENTIFIER> (<DOT> <IDENTIFIER> )* <SEMICOLON> )*
+   ( <IMPORT> t = <IDENTIFIER> (<DOT> <IDENTIFIER> )*{jjtThis.put("importObject", t.image);} <SEMICOLON> )*
 }
 
-void ClassDeclaration() #Class : {}
+void ClassDeclaration() #Class : {Token t,w;}
 {
-   <CLASS> <IDENTIFIER> ( <EXTENDS> <IDENTIFIER> #Extends )? <LBRACKET> ( VarDeclaration() )* ( MethodDeclaration() )* <RBRACKET>
+   <CLASS> t = <IDENTIFIER>{jjtThis.put("className", t.image);} ( <EXTENDS> w=<IDENTIFIER>{jjtThis.put("classExtends", w.image);} #Extends )? <LBRACKET> ( VarDeclaration() )* ( MethodDeclaration() )* <RBRACKET>
 }
 
-void VarDeclaration() #VarDeclaration: {}
+void VarDeclaration() #VarDeclaration: {Token t;}
 {
-   Type() <IDENTIFIER> <SEMICOLON>
+   Type() t = <IDENTIFIER>{jjtThis.put("variable", t.image);} <SEMICOLON>
 }
 
-void MethodDeclaration() #MethodDeclaration: {}
+void MethodDeclaration() #MethodDeclaration: {Token t,w;}
 {
    <PUBLIC>
    (
       (
-          Type() <IDENTIFIER> <LPAR> ( Type() <IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )* )? #Parameters <RPAR>
+          Type() t=<IDENTIFIER>{jjtThis.put("functionName", t.image);} <LPAR> ( Type() w=<IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )*{jjtThis.put("arguments", w.image);} )?  <RPAR>
           <LBRACKET>
               MethodBody()
               <RETURN> Expression() #Return <SEMICOLON>
@@ -146,11 +144,12 @@ void MethodBody() #MethodBody: {}
     ( LOOKAHEAD(2) VarDeclaration() )* ( Statement() )*
 }
 
-void Type() #void: {}
+void Type() #Type: {Token t;}
 {
-   <INT> ( <LSQRBRACKET> <RSQRBRACKET> )? #IntArrayVar
-   | <BOOLEAN> #BooleanVar
-   | <IDENTIFIER> #TypeID
+   t = <INT> ( <LSQRBRACKET> <RSQRBRACKET> #IntArrayVar )?{jjtThis.put("type", t.image);}
+   | t = <BOOLEAN>{jjtThis.put("type", t.image);} 
+   | t = <IDENTIFIER>{jjtThis.put("type", t.image);} 
+   
 }
 
 
@@ -159,9 +158,9 @@ void Statement() #void: {}
    StatementWithID() | StatementWithoutID()
 }
 
-void StatementWithID() #void : {}
+void StatementWithID() #IDstatement : {Token t;}
 {
-   <IDENTIFIER>   
+   t=<IDENTIFIER>{jjtThis.put("ID", t.image);}   
    (  
       ( <EQUALS> Expression() <SEMICOLON> #VarAssignment )
    | 
@@ -295,19 +294,19 @@ void ExpressionSwitchFromDIV() #void : {}
    ExpressionSwitchFromDOT() ExpressionDOT()
 }
 
-void ExpressionDOT() #void: {}
+void ExpressionDOT() #void: {Token t;}
 {
     (
        <DOT>
        (
-           <LENGTH>
+           t=<LENGTH>{jjtThis.put("DotMethodCall", t.image);}
        |
-          ( <IDENTIFIER> <LPAR>
+          t=<IDENTIFIER> <LPAR>
              ( Expression()
                 ( <COMMA> Expression() )*
              )?
              <RPAR>
-          )
+          {jjtThis.put("DotMethodCall", t.image);}
        ) #DotMethodCall
        ExpressionArrayIndexing() ExpressionDOT()
    )
@@ -373,16 +372,16 @@ void ExpressionSwitchFromDOTWithoutID() #void: {}
 
 //TERMINAL BLOCKS
 
-void ExpressionTerminal() #void : {}
+void ExpressionTerminal() #Terminal: {Token t;}
 {
    ExpressionTerminalWithoutID()
    |
-   <IDENTIFIER>
+   t=<IDENTIFIER>{jjtThis.put("ID", t.image);}
 }
 
-void ExpressionTerminalWithoutID() #void : {}
+void ExpressionTerminalWithoutID() #Terminal : {Token t;}
 {
-   <INTEGER>
+   t=<INTEGER>{jjtThis.put("Integer", t.image);}
       | <TRUE> #BooleanTrue
       | <FALSE>  #BooleanFalse
       | <THIS> #This
@@ -390,7 +389,7 @@ void ExpressionTerminalWithoutID() #void : {}
       ( 
          ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) #IntArrayVar   //TODO: verificar se esta anotação fica bem aqui (repetida em cima)
         |
-         ( <IDENTIFIER> <LPAR> <RPAR> ) #TypeObject
+         ( t=<IDENTIFIER>{jjtThis.put("Object", t.image);} <LPAR> <RPAR> ) #TypeObject
       ) #New
       | <NOT> Expression() #Not
       | <LPAR> Expression() <RPAR>

@@ -6,7 +6,7 @@ import java.lang.RuntimeException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.HashMap;
 
 public
 class SimpleNode implements Node, JmmNode {
@@ -16,7 +16,7 @@ class SimpleNode implements Node, JmmNode {
   protected int id;
   protected Object value;
   protected Jmm parser;
-
+  protected HashMap<String,String> arguments = new HashMap<String,String>();
     // added
     public int val;
     public Operator op = null;
@@ -36,15 +36,20 @@ class SimpleNode implements Node, JmmNode {
   }
   
   public List<String> getAttributes() {
-	throw new RuntimeException("Not implemented yet");
+	//throw new RuntimeException("Not implemented yet");
+    List<String> l = new ArrayList<String>(arguments.keySet());
+    return l;
   }
 
   public void put(String attribute, String value) {
-	throw new RuntimeException("Not implemented yet");	  
+	//throw new RuntimeException("Not implemented yet");	 
+    arguments.put(attribute, value); 
   }
 
   public String get(String attribute) {
-	throw new RuntimeException("Not implemented yet");
+	//throw new RuntimeException("Not implemented yet");
+
+  return arguments.get(attribute);
   }
   
   public List<JmmNode> getChildren() {
@@ -111,22 +116,47 @@ class SimpleNode implements Node, JmmNode {
   public String toString() {
     return JmmTreeConstants.jjtNodeName[id];
   }
-  public String toString(String prefix) { return prefix + toString(); }
+  public String toString(String prefix) { 
+    return prefix + toString(); 
+  }
+  public String toString(HashMap<String,String> args){
+    String result = "";
+    List<String> keys=getAttributes();
+    for(String key : keys){
+      result += key + ": " + arguments.get(key) + "; ";
+
+    }
+    return result;
+  }
 
   /* Override this method if you want to customize how the node dumps
      out its children. */
+
 
   public void dump(String prefix) {
     System.out.println(toString(prefix));
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
-        SimpleNode n = (SimpleNode)children[i];
+        SimpleNode n = (SimpleNode) children[i];
         if (n != null) {
-          n.dump(prefix + " ");
+          n.dump(prefix + " " /*+ "{"+toString(arguments)+"}"*/);
         }
       }
     }
   }
+
+
+  // public void dump(String prefix) {
+  //   System.out.println(toString(prefix));
+  //   if (children != null) {
+  //     for (int i = 0; i < children.length; ++i) {
+  //       SimpleNode n = (SimpleNode)children[i];
+  //       if (n != null) {
+  //         n.dump(prefix + " ");
+  //       }
+  //     }
+  //   }
+  // }
 
   public int getId() {
     return id;

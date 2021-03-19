@@ -16,7 +16,9 @@ public class Main implements JmmParser {
 		    Jmm myJmm = new Jmm(new StringReader(jmmCode));
     		SimpleNode root = myJmm.Program(); // returns reference to root node
             	
-    		root.dump(""); // prints the tree on the screen
+    		//root.dump(""); // prints the tree on the screen
+			System.out.println(root.toJson()); //Gson
+			
 
 			// ORIGINAL
     		//return new JmmParserResult(root, myJmm.reports);
