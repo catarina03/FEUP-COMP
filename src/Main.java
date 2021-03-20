@@ -6,6 +6,9 @@ import pt.up.fe.comp.jmm.report.Report;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 
 public class Main implements JmmParser {
 
@@ -16,8 +19,19 @@ public class Main implements JmmParser {
 		    Jmm myJmm = new Jmm(new StringReader(jmmCode));
     		SimpleNode root = myJmm.Program(); // returns reference to root node
             	
-    		//root.dump(""); // prints the tree on the screen
-			System.out.println(root.toJson()); //Gson
+    		root.dump(""); // prints the tree on the screen
+
+
+			// Writing the json tree to a file (generated/jmm.json)
+			try {
+				String jsonTree = root.toJson();
+				Files.deleteIfExists(Paths.get("generated/jmm.json"));
+				Files.createFile(Paths.get("generated/jmm.json"));
+				Files.write(Paths.get("generated/jmm.json"), jsonTree.getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			
 
 			// ORIGINAL
