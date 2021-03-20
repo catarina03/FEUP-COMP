@@ -13,7 +13,7 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class ExampleTest {
 
-/*
+
     @Test
     public void testFileHello() {
 
@@ -117,6 +117,7 @@ public class ExampleTest {
 
     }
 
+
     @Test
     public void testFileQuickSort() {
 
@@ -140,12 +141,28 @@ public class ExampleTest {
         TestUtils.parse(jmmParser);
 
     }
-    */
 
+/*
     @Test
     public void testFileCompleteWhileTest() {
 
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/syntactical/CompleteWhileTest.jmm");
+        System.out.println("FILE HERE ---------------");
+        System.out.println(jmmParser);
+
+        System.out.println("PARSE TREE HERE ---------------");
+        TestUtils.parse(jmmParser);
+
+    }
+
+ */
+
+
+
+    @Test
+    public void testFilePrecedenciasXD() {
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/PrecedenciasXD.jmm");
         System.out.println("FILE HERE ---------------");
         System.out.println(jmmParser);
 

@@ -206,9 +206,9 @@ SimpleNode While() #While : {}
    } catch (ParseException e) {
       this.errorCounter++;
       reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, getToken(0).beginLine ,e.getMessage()));
-      System.out.println(this.errorCounter);
+      //System.out.println(this.errorCounter);
 
-      System.out.println("Exception on WHILE CONDITION caught.");
+      //System.out.println("Exception on WHILE CONDITION caught.");
       
       error_skipto(RPAR);
 
@@ -250,54 +250,33 @@ void ExpressionLESS() #void :{}
 
 void ExpressionSwitchFromLESS() #void : {}         
 {
-   ExpressionSwitchFromPLUS() ExpressionPLUS()
+   ExpressionSwitchFromPLUSMINUS() ExpressionPLUSMINUS()
 }
 
-void ExpressionPLUS() #void :{}            
+void ExpressionPLUSMINUS() #void :{}
 {
-   ( <PLUS> ExpressionSwitchFromPLUS() #Plus ExpressionPLUS() )
-   | 
+   ( <PLUS> ExpressionSwitchFromPLUSMINUS() #Plus ExpressionPLUSMINUS() )
+   |
+   ( <MINUS> ExpressionSwitchFromPLUSMINUS() #Minus ExpressionPLUSMINUS() )
+   |
    {}
 }
 
-void ExpressionSwitchFromPLUS() #void :{}      
+void ExpressionSwitchFromPLUSMINUS() #void :{}
 {
-   ExpressionSwitchFromMINUS() ExpressionMINUS() 
+   ExpressionSwitchFromMULDIV() ExpressionMULDIV()
 }
 
-
-void ExpressionMINUS() #void :{}           
+void ExpressionMULDIV() #void :{}
 {
-   ( <MINUS> ExpressionSwitchFromMINUS() #Minus ExpressionMINUS() )
-   | 
+   ( <MUL> ExpressionSwitchFromMULDIV() #Mul ExpressionMULDIV() )
+   |
+   ( <DIV> ExpressionSwitchFromMULDIV() #Div ExpressionMULDIV() )
+   |
    {}
 }
 
-void ExpressionSwitchFromMINUS() #void :{}      
-{
-   ExpressionSwitchFromMUL() ExpressionMUL() 
-}
-
-void ExpressionMUL() #void :{}              
-{
-   ( <MUL> ExpressionSwitchFromMUL() #Mul ExpressionMUL() )
-   | 
-   {}
-}
-
-void ExpressionSwitchFromMUL() #void :{}     
-{
-   ExpressionSwitchFromDIV() ExpressionDIV() 
-}
-
-void ExpressionDIV() #void :{}                
-{
-   ( <DIV> ExpressionSwitchFromDIV() #Div ExpressionDIV() )
-   | 
-   {}
-}
-
-void ExpressionSwitchFromDIV() #void : {}
+void ExpressionSwitchFromMULDIV() #void :{}
 {
    ExpressionSwitchFromDOT() ExpressionDOT()
 }
@@ -350,25 +329,15 @@ void ExpressionSwitchFromANDWithoutID() #void : {}
 
 void ExpressionSwitchFromLESSWithoutID() #void : {}
 {
-    ExpressionSwitchFromPLUSWithoutID() ExpressionPLUS()
+    ExpressionSwitchFromPLUSMINUSWithoutID() ExpressionPLUSMINUS()
 }
 
-void ExpressionSwitchFromPLUSWithoutID() #void : {}
+void ExpressionSwitchFromPLUSMINUSWithoutID() #void : {}
 {
-    ExpressionSwitchFromMINUSWithoutID() ExpressionMINUS()
+    ExpressionSwitchFromMULDIVWithoutID() ExpressionMULDIV()
 }
 
-void ExpressionSwitchFromMINUSWithoutID() #void : {}
-{
-    ExpressionSwitchFromMULWithoutID() ExpressionMUL()
-}
-
-void ExpressionSwitchFromMULWithoutID() #void : {}
-{
-    ExpressionSwitchFromDIVWithoutID() ExpressionDIV()
-}
-
-void ExpressionSwitchFromDIVWithoutID() #void : {}
+void ExpressionSwitchFromMULDIVWithoutID() #void : {}
 {
     ExpressionSwitchFromDOTWithoutID() ExpressionDOT()
 }
@@ -418,11 +387,11 @@ void error_skipto(int kind) {
    do {
       t = getNextToken();
 
-      System.out.println("Next token: " + t.image);
+      //System.out.println("Next token: " + t.image);
 
       if(t.kind == LPAR){
           this.parenthesisCounter++;
-          System.out.println("Found parenthesis inside parenthesis");
+          //System.out.println("Found parenthesis inside parenthesis");
          error_skipto(RPAR);
       }
 
