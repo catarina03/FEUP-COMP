@@ -394,7 +394,7 @@ void ExpressionTerminalWithoutID() #Terminal : {Token t;}
       | <TRUE> #BooleanTrue
       | <FALSE>  #BooleanFalse
       | <THIS> #This
-      | <NEW> 
+      | <NEW>
       ( 
          ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) #IntArrayVar   //TODO: verificar se esta anotação fica bem aqui (repetida em cima)
         |
