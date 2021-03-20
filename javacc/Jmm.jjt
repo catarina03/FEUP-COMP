@@ -7,10 +7,12 @@ PARSER_BEGIN(Jmm)
 
 import pt.up.fe.comp.jmm.report.*;
 import java.util.ArrayList;
+//import java.lang.*;
 
 public class Jmm{
 
    public int errorCounter = 0;
+   public int parenthesisCounter = 0;
    public ArrayList<Report> reports = new ArrayList<Report>();
 
 
@@ -96,7 +98,7 @@ SimpleNode Program(): {}
    try {
       ImportDeclaration() ClassDeclaration() <EOF> 
    } catch(Exception e) {
-        e.printStackTrace();
+       e.printStackTrace();
    }
 
    {return jjtThis;} // Java code inside brackets
@@ -122,7 +124,10 @@ void MethodDeclaration() #MethodDeclaration: {Token t,w;}
    <PUBLIC>
    (
       (
-          Type() t=<IDENTIFIER>{jjtThis.put("functionName", t.image);} <LPAR> ( Type() w=<IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )*{jjtThis.put("arguments", w.image);} )?  <RPAR>
+          Type() t=<IDENTIFIER>{jjtThis.put("functionName", t.image);}
+          <LPAR> { this.parenthesisCounter++; }
+            ( Type() w=<IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )*{jjtThis.put("arguments", w.image);} )?
+          <RPAR> { parenthesisCounter--; }
           <LBRACKET>
               MethodBody()
               <RETURN> Expression() #Return <SEMICOLON>
@@ -130,7 +135,8 @@ void MethodDeclaration() #MethodDeclaration: {Token t,w;}
       )
       |
       (
-          <STATIC> <VOID> <MAIN> #Main <LPAR> <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> <RPAR> #MainParameters
+          <STATIC> <VOID> <MAIN> #Main
+          <LPAR> { this.parenthesisCounter++; } <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> <RPAR> { parenthesisCounter--; } #MainParameters
           <LBRACKET>
               MethodBody()
           <RBRACKET>
@@ -180,7 +186,9 @@ void StatementWithoutID() #void : {}
 
 void Condition() #Condition: {}
 {
-   <LPAR> Expression() <RPAR>
+   <LPAR> { this.parenthesisCounter++; }
+     Expression()
+   <RPAR> { this.parenthesisCounter--; }
 }
 
 void IfElse() #If : {}
@@ -192,7 +200,9 @@ SimpleNode While() #While : {}
 {
    <WHILE>
    try {
-      <LPAR> Expression() <RPAR>
+      <LPAR> { this.parenthesisCounter++; }
+        Expression()
+      <RPAR> { this.parenthesisCounter--; }
    } catch (ParseException e) {
       this.errorCounter++;
       reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, getToken(0).beginLine ,e.getMessage()));
@@ -203,10 +213,8 @@ SimpleNode While() #While : {}
       error_skipto(RPAR);
 
       if(this.errorCounter == 10){
-         throw e;
+         System.exit(0);
       }
-
-
    }
    Statement()
 
@@ -301,11 +309,12 @@ void ExpressionDOT() #void: {Token t;}
        (
            t=<LENGTH>{jjtThis.put("DotMethodCall", t.image);}
        |
-          t=<IDENTIFIER> <LPAR>
-             ( Expression()
-                ( <COMMA> Expression() )*
-             )?
-             <RPAR>
+          t=<IDENTIFIER>
+             <LPAR> { this.parenthesisCounter++; }
+                 ( Expression()
+                    ( <COMMA> Expression() )*
+                 )?
+             <RPAR> { this.parenthesisCounter--; }
           {jjtThis.put("DotMethodCall", t.image);}
        ) #DotMethodCall
        ExpressionArrayIndexing() ExpressionDOT()
@@ -389,10 +398,10 @@ void ExpressionTerminalWithoutID() #Terminal : {Token t;}
       ( 
          ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) #IntArrayVar   //TODO: verificar se esta anotação fica bem aqui (repetida em cima)
         |
-         ( t=<IDENTIFIER>{jjtThis.put("Object", t.image);} <LPAR> <RPAR> ) #TypeObject
+         ( t=<IDENTIFIER>{jjtThis.put("Object", t.image);} <LPAR> { this.parenthesisCounter++; } <RPAR> { this.parenthesisCounter--; } ) #TypeObject
       ) #New
       | <NOT> Expression() #Not
-      | <LPAR> Expression() <RPAR>
+      | <LPAR> { this.parenthesisCounter++; } Expression() <RPAR> { this.parenthesisCounter--; }
 }
 
 
@@ -409,11 +418,17 @@ void error_skipto(int kind) {
    do {
       t = getNextToken();
 
-      System.out.println(t.image);
+      System.out.println("Next token: " + t.image);
 
       if(t.kind == LPAR){
+          this.parenthesisCounter++;
+          System.out.println("Found parenthesis inside parenthesis");
          error_skipto(RPAR);
       }
+
+      if(t.kind == RPAR){
+        this.parenthesisCounter--;
+      }
    }
-   while (t.kind != kind && t.kind != EOF);
+   while ( (t.kind != kind && t.kind != EOF ) || this.parenthesisCounter != 0);
 }
