@@ -138,7 +138,7 @@ class SimpleNode implements Node, JmmNode {
       System.out.println(toString(prefix));
     }
     else {
-      System.out.println(toString(prefix) + " { "+ toString(arguments) +"}");
+      System.out.println(toString(prefix) + "\n" + prefix + " " + toString(arguments));
     }
 
     if (children != null) {
