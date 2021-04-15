@@ -8,7 +8,12 @@ import java.util.ArrayList;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.File;
+
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 public class Main implements JmmParser {
 
@@ -59,20 +64,44 @@ public class Main implements JmmParser {
         }
 
 		JmmParserResult result;
+		InputStream fileStream = null;
 
-		// Copy of the code in parser function :)
+		// Opens file passed in arguments and gets its content
+		try{
+			File file = new File(args[0]);
+			System.out.println(file.getAbsolutePath());
+			fileStream = new FileInputStream(file);
+		} catch(FileNotFoundException e){
+			System.out.println("Couldn't find file");
+			System.exit(0);
+		}
+
+		// Parses file
 		try {
-		    Jmm myJmm = new Jmm(new StringReader(args[0]));
+			Jmm myJmm = new Jmm(fileStream);
     		SimpleNode root = myJmm.Program(); // returns reference to root node
 		
     		root.dump(""); // prints the tree on the screen
-    	
+
+			// Printing reports
     		result = new JmmParserResult(root, myJmm.reports);
 			System.out.println(result.getReports().toString());
+
+			// Writing the json tree to a file (generated/jmm.json)
+			try {
+				String jsonTree = root.toJson();
+				Files.deleteIfExists(Paths.get("generated/jmm.json"));
+				Files.createFile(Paths.get("generated/jmm.json"));
+				Files.write(Paths.get("generated/jmm.json"), jsonTree.getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);
 		}
+
+
 
     }
 
