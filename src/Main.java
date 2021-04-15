@@ -59,9 +59,11 @@ public class Main implements JmmParser {
 
     public static void main(String[] args) {
         System.out.println("Executing with args: " + Arrays.toString(args));
-        if (args[0].contains("fail")) {
+       /* if (args[0].contains("fail")) {
             throw new RuntimeException("It's supposed to fail");
         }
+
+        */
 
 		JmmParserResult result;
 		InputStream fileStream = null;
@@ -69,7 +71,7 @@ public class Main implements JmmParser {
 		// Opens file passed in arguments and gets its content
 		try{
 			File file = new File(args[0]);
-			System.out.println(file.getAbsolutePath());
+			//System.out.println(file.getAbsolutePath());
 			fileStream = new FileInputStream(file);
 		} catch(FileNotFoundException e){
 			System.out.println("Couldn't find file");
