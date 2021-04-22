@@ -9,21 +9,49 @@ public class ClassMethod {
     private Type returnType;
     private ArrayList<Symbol> localVariables;
 
-    public String getMethodName() {
+    public ClassMethod(){
+        this.methodName = "";
+        this.methodParameters = new ArrayList<Symbol>();
+        this.localVariables = new ArrayList<Symbol>();
+    }
+
+    public void setMethodName(String name) {
+        this.methodName = name;
+    }
+
+    public String getMethodName()  {
         return this.methodName;
+    }
+    
+    public void setMethodParameters(ArrayList<Symbol> params) {
+        this.methodParameters = params;
     }
 
     public ArrayList<Symbol> getMethodParameters() {
         return this.methodParameters;
     }
 
+    public void setReturnType(Type type) {
+        this.returnType = type;
+    }
+
     public Type getReturnType() {
         return this.returnType;
+    }
+
+    public void setLocalVariables(ArrayList<Symbol> localVars) {
+        this.localVariables = localVars;
     }
 
     public ArrayList<Symbol> getLocalVariables() {
         return this.localVariables;
     }
 
-
+    @Override
+    public String toString(){
+        return "Method name: " + this.methodName + "\n" +
+                "Method parameters: " + this.methodParameters + "\n" + 
+                "Return type: " + this.returnType + "\n" +
+                "Local variables: " + this.localVariables + "\n";
+    }
 }

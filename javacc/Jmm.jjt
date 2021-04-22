@@ -119,14 +119,24 @@ void VarDeclaration() #VarDeclaration: {Token t;}
    Type() t = <IDENTIFIER>{jjtThis.put("variable", t.image);} <SEMICOLON>
 }
 
-void MethodDeclaration() #MethodDeclaration: {Token t,w;}
+void ArgDeclaration() #ArgDeclaration: {Token t;}
+{
+   Type() t = <IDENTIFIER>{jjtThis.put("variable", t.image);}
+}
+
+void MethodDeclaration() #MethodDeclaration: {Token t,w,x;}
 {
    <PUBLIC>
    (
       (
-          Type() t=<IDENTIFIER>{jjtThis.put("functionName", t.image);}
+          Type() #ReturnType t=<IDENTIFIER>{jjtThis.put("functionName", t.image);}
           <LPAR> { this.parenthesisCounter++; }
-            ( Type() w=<IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )*{jjtThis.put("arguments", w.image);} )?
+            ( 
+               ArgDeclaration()
+               (
+                   <COMMA> ArgDeclaration()
+               )* 
+            )?
           <RPAR> { parenthesisCounter--; }
           <LBRACKET>
               MethodBody()

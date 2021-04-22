@@ -103,10 +103,17 @@ public class Main implements JmmParser {
 				e.printStackTrace();
 			}
 
-			JmmNode jmmNode = JmmNode.fromJson(jsonTree);
-			ExampleVisitor exampleVisitor = new ExampleVisitor("identifier", "id");
+			SymbolTableManager symbolTable = new SymbolTableManager();
 
-			System.out.println(exampleVisitor.visit(jmmNode));
+			JmmNode jmmNode = JmmNode.fromJson(jsonTree);
+			FirstPreorderVisitor testVisitor = new FirstPreorderVisitor();
+			testVisitor.visit(jmmNode, symbolTable);
+
+			//ExampleVisitor exampleVisitor = new ExampleVisitor("identifier", "id");
+
+			
+			System.out.println("-- SymbolTable --\n" + symbolTable);
+			//System.out.println(testVisitor.visit(jmmNode));
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);

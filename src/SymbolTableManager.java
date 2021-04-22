@@ -14,15 +14,45 @@ public class SymbolTableManager implements SymbolTable {
     private ArrayList<Symbol> classFields;
     private HashMap<String, ClassMethod> classMethods;
 
+    public SymbolTableManager(){
+        this.className = "";
+        this.classExtends = false;
+        this.classSuper = "";
+        this.imports = new ArrayList<>();
+        this.classFields = new ArrayList<>();
+        this.classMethods = new HashMap<>();
+    }
+
     @Override
     public List<String> getImports() {
         return this.imports;
+    }
+
+    public void addImports(String importObject){
+        imports.add(importObject);
+    }
+    
+    public void addMethod(ClassMethod classMethod){
+        classMethods.putIfAbsent(classMethod.getMethodName(), classMethod);
     }
 
     @Override
     public String getClassName() {
         return this.className;
     }
+
+    public void setClassName(String className){
+        this.className = className;
+    }
+
+    public void setClassExtends(Boolean classExtends){
+        this.classExtends = classExtends;
+    }
+
+    public void setClassSuper(String classSuper){
+        this.classSuper = classSuper;
+    }
+
 
     @Override
     public String getSuper() {
@@ -57,5 +87,15 @@ public class SymbolTableManager implements SymbolTable {
     @Override
     public List<Symbol> getLocalVariables(String methodName) {
         return this.classMethods.get(methodName).getLocalVariables();
+    }
+
+    @Override
+    public String toString(){
+        return "ClassName: " + this.className + "\n" +
+                "Class extends?" + this.classExtends + "\n" + 
+                "Class super: " + this.classSuper + "\n" + 
+                "Imports: " + this.imports + "\n" + 
+                "Class fields: " + this.classFields + "\n" + 
+                "Class methods: " + this.classMethods + "\n";
     }
 }
