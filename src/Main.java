@@ -1,6 +1,8 @@
 
+import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
+import pt.up.fe.comp.jmm.ast.examples.ExampleVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 
 import java.util.Arrays;
@@ -89,15 +91,22 @@ public class Main implements JmmParser {
     		result = new JmmParserResult(root, myJmm.reports);
 			System.out.println(result.getReports().toString());
 
+			String jsonTree = "";
+
 			// Writing the json tree to a file (generated/jmm.json)
 			try {
-				String jsonTree = root.toJson();
+				jsonTree = root.toJson();
 				Files.deleteIfExists(Paths.get("generated/jmm.json"));
 				Files.createFile(Paths.get("generated/jmm.json"));
 				Files.write(Paths.get("generated/jmm.json"), jsonTree.getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
+			JmmNode jmmNode = JmmNode.fromJson(jsonTree);
+			ExampleVisitor exampleVisitor = new ExampleVisitor("identifier", "id");
+
+			System.out.println(exampleVisitor.visit(jmmNode));
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);

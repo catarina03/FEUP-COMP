@@ -98,7 +98,7 @@ SimpleNode Program(): {}
    try {
       ImportDeclaration() ClassDeclaration() <EOF> 
    } catch(Exception e) {
-       e.printStackTrace();
+       //e.printStackTrace();
    }
 
    {return jjtThis;} // Java code inside brackets
