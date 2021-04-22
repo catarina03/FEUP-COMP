@@ -162,7 +162,7 @@ void MethodBody() #MethodBody: {}
 
 void Type() #Type: {Token t;}
 {
-   t = <INT> ( <LSQRBRACKET> <RSQRBRACKET> #IntArrayVar )?{jjtThis.put("type", t.image);}
+   t = <INT> ( <LSQRBRACKET> <RSQRBRACKET> #IntArrayVarType )?{jjtThis.put("type", t.image);}
    | t = <BOOLEAN>{jjtThis.put("type", t.image);} 
    | t = <IDENTIFIER>{jjtThis.put("type", t.image);} 
    

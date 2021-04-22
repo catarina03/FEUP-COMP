@@ -53,12 +53,12 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
                     System.out.println(node.getKind());
                     System.out.println(node.getChildren());
                     System.out.println(node.getAttributes());
-                    System.out.println(node.getOptional("arguments") + "\n");
+                    //System.out.println(node.getOptional("arguments") + "\n");
 
                     String returnTypeName = "";
                     boolean returnTypeIsArray = false;
-                    ArrayList<String> methodArgumentNames = new ArrayList<>();//= node.get("arguments");
-                    ArrayList<Type> methodArgumentTypes = new ArrayList<Type>();
+                    //ArrayList<String> methodArgumentNames = new ArrayList<>();//= node.get("arguments");
+                    //ArrayList<Type> methodArgumentTypes = new ArrayList<Type>();
                     ArrayList<Symbol> methodArguments = new ArrayList<>();
                     
                     for (int i = 0; i < node.getChildren().size(); i++){
@@ -70,24 +70,51 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
                             }
                         }
 
-                        if (node.getChildren().get(i).getKind().equals("Type")){
-                            String argumentTypeName = node.getChildren().get(i).get("type");
+                        if (node.getChildren().get(i).getKind().equals("ArgDeclaration")){
+                            System.out.println("Arg name: " + node.getChildren().get(i).get("variable"));
+                            String argumentName = node.getChildren().get(i).get("variable");
 
                             boolean argumentTypeIsArray = false;
-                            if (node.getChildren().get(i).getChildren().size() == 1){
-                                argumentTypeIsArray = true;
+                            String argumentTypeName = "";
+
+                            if (node.getChildren().get(i).getChildren().size() > 0){
+                                System.out.println("VAR HAS CHILDREN");
+                                
+                                System.out.println("Arg type - 2: " + node.getChildren().get(i).getChildren().get(0).getChildren());
+                                
+                                if (node.getChildren().get(i).getChildren().get(0).getChildren().size() > 0){
+                                    System.out.println("NEM SEI O QUE É ISTO MAS TEM CHILDRENYAY");
+                                    System.out.println("Arg type - 1: " + node.getChildren().get(i).getChildren().get(0).getChildren().get(0));
+                                }
+                                
+                                
                             }
 
-                            methodArgumentTypes.add(new Type(argumentTypeName, argumentTypeIsArray));
+/*
+                            if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).equals("IntArrayVarType")){
+                                argumentTypeName = "int";
+                                argumentTypeIsArray = true;
+                            }
+                            else {
+                                //System.out.println("Arg type: " + node.getChildren().get(i).getChildren().get(0).getChildren().get(0).get("type"));
+                                //argumentTypeName = node.getChildren().get(i).getChildren().get(0).getChildren().get(0).get("type");
+                                //argumentTypeIsArray = Boolean.parseBoolean(node.getChildren().get(i).getChildren().get(0).getChildren().get(1).getOptional("isArray").get());
+
+                            }
+                            */
+
+                            methodArguments.add(new Symbol(new Type(argumentTypeName, argumentTypeIsArray), argumentName));
                         }
                     }
 
                     Type returnType = new Type(returnTypeName, returnTypeIsArray);
                     method.setReturnType(returnType);
 
-                    for (int i = 0; i < methodArgumentNames.size(); i++){
-                        methodArguments.add(new Symbol(methodArgumentTypes.get(i), methodArgumentNames.get(i)));
-                    }
+                    method.setMethodParameters(methodArguments);
+
+                    //for (int i = 0; i < methodArgumentNames.size(); i++){
+                     //   methodArguments.add(new Symbol(methodArgumentTypes.get(i), methodArgumentNames.get(i)));
+                    //}
 
                 }
                 symbolTable.addMethod(method);
