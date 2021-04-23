@@ -124,7 +124,7 @@ void ArgDeclaration() #ArgDeclaration: {Token t;}
    Type() t = <IDENTIFIER>{jjtThis.put("variable", t.image);}
 }
 
-void MethodDeclaration() #MethodDeclaration: {Token t,w,x;}
+void MethodDeclaration() #MethodDeclaration: {Token t,w,x,y;}
 {
    <PUBLIC>
    (
@@ -146,7 +146,7 @@ void MethodDeclaration() #MethodDeclaration: {Token t,w,x;}
       |
       (
           <STATIC> <VOID> <MAIN> #Main
-          <LPAR> { this.parenthesisCounter++; } <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> <RPAR> { parenthesisCounter--; } #MainParameters
+          <LPAR> { this.parenthesisCounter++; } <STRING> <LSQRBRACKET> <RSQRBRACKET> y=<IDENTIFIER>{jjtThis.put("variable", y.image);} #MainArguments <RPAR> { parenthesisCounter--; }
           <LBRACKET>
               MethodBody()
           <RBRACKET>
