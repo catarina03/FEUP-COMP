@@ -11,8 +11,8 @@ public class ClassMethod {
 
     public ClassMethod(){
         this.methodName = "";
-        this.methodParameters = new ArrayList<Symbol>();
-        this.localVariables = new ArrayList<Symbol>();
+        this.methodParameters = new ArrayList<>();
+        this.localVariables = new ArrayList<>();
     }
 
     public void setMethodName(String name) {

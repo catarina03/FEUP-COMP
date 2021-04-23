@@ -10,20 +10,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager, Boolean> {
-    //private final String identifierAttribute;
 
     public FirstPreorderVisitor() {
-        //super(FirstPreorderVisitor::reduce);
-
-        //this.identifierAttribute = identifierAttribute;
-
-        //addVisit(, this::dealWithIdentifier);
         setDefaultVisit(this::populateSymbolTable);
     }
 
     private Boolean populateSymbolTable(JmmNode node, SymbolTableManager symbolTable){
-        System.out.println("I'M HERE IN NODE: " + node.getKind());
-
         switch(node.getKind()){
             case "Import":
                 symbolTable.addImports(node.get("importObject"));
@@ -149,71 +141,26 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
                 symbolTable.addMethod(method);
                 break;
 
-        }
+            case "VarDeclaration":
+                // RETRIEVES CLASS FIELDS AND STORES THEM IN THE SYMBOL TABLE
+                if (node.getParent().getKind().equals("Class")) {
+                    String fieldName = node.get("variable");
+                    boolean fieldIsArray = false;
+                    String fieldTypeName = "";
+                    for (int i = 0; i < node.getChildren().size(); i++) {
+                        fieldTypeName = node.getChildren().get(i).get("type");
+                        if (node.getChildren().get(i).getChildren().size() > 0) {
+                            if (node.getChildren().get(i).getChildren().get(0).getKind().equals("IntArrayVarType")) {
+                                fieldIsArray = true;
+                            }
+                        }
+                    }
+                    symbolTable.addField(new Symbol(new Type(fieldTypeName, fieldIsArray), fieldName));
+                }
+                break;
 
+        }
         return true;
     }
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public String dealWithIdentifier(JmmNode node, String space) {
-        if (node.get(identifierAttribute).equals("this")) {
-            return space + "THIS_ACCESS";
-        }
-
-        return defaultVisit(node, space);
-    }
-
-    private String defaultVisit(JmmNode node, String space) {
-        String content = space + node.getKind();
-        String attrs = node.getAttributes()
-                .stream()
-                .filter(a -> !a.equals("line"))
-                .map(a -> a + "=" + node.get(a))
-                .collect(Collectors.joining(", ", "[", "]"));
-
-        content += ((attrs.length() > 2) ? attrs : "");
-
-        return content;
-    }
-
-    private static String reduce(String nodeResult, List<String> childrenResults) {
-        var content = new StringBuilder();
-
-        content.append(nodeResult).append("\n");
-
-        for (var childResult : childrenResults) {
-            var childContent = StringLines.getLines(childResult).stream()
-                    .map(line -> " " + line + "\n")
-                    .collect(Collectors.joining());
-
-            content.append(childContent);
-        }
-
-        return content.toString();
-    }
-    */
 
 }

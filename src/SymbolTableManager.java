@@ -69,6 +69,10 @@ public class SymbolTableManager implements SymbolTable {
         return this.classFields;
     }
 
+    public void addField(Symbol field){
+        this.classFields.add(field);
+    }
+
     @Override
     public List<String> getMethods() {
         return new ArrayList<>(this.classMethods.keySet());
@@ -92,7 +96,7 @@ public class SymbolTableManager implements SymbolTable {
     @Override
     public String toString(){
         return "ClassName: " + this.className + "\n" +
-                "Class extends?" + this.classExtends + "\n" + 
+                "Extends a class: " + this.classExtends + "\n" +
                 "Class super: " + this.classSuper + "\n" + 
                 "Imports: " + this.imports + "\n" + 
                 "Class fields: " + this.classFields + "\n" + 
