@@ -52,36 +52,35 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
                     System.out.println(node.getChildren().get(0).getChildren());
 
                     for (int i = 0; i < node.getChildren().size(); i++) {
-                        System.out.println(node.getChildren().get(i));
-
                         if (node.getChildren().get(i).getKind().equals("MainArguments")) {
                             String argumentName = node.getChildren().get(i).get("variable");
                             boolean argumentTypeIsArray = true;
                             String argumentTypeName = "String";
                             methodArguments.add(new Symbol(new Type(argumentTypeName, argumentTypeIsArray), argumentName));
+                        }
 
-                            if (node.getChildren().get(i).getKind().equals("MethodBody")) {
-                                for (int j = 0; j < node.getChildren().get(i).getChildren().size(); j++) {
-                                    if (node.getChildren().get(i).getChildren().get(j).getKind().equals("VarDeclaration")) {
-                                        String localVariableName = node.getChildren().get(i).getChildren().get(j).get("variable");
-                                        boolean localVariableTypeIsArray = false;
-                                        String localVariableTypeName = "";
+                        if (node.getChildren().get(i).getKind().equals("MethodBody")) {
+                            for (int j = 0; j < node.getChildren().get(i).getChildren().size(); j++) {
+                                if (node.getChildren().get(i).getChildren().get(j).getKind().equals("VarDeclaration")) {
+                                    String localVariableName = node.getChildren().get(i).getChildren().get(j).get("variable");
+                                    boolean localVariableTypeIsArray = false;
+                                    String localVariableTypeName = "";
 
-                                        if (node.getChildren().get(i).getChildren().get(j).getChildren().size() > 0) {
-                                            localVariableTypeName = node.getChildren().get(i).getChildren().get(j).getChildren().get(0).get("type");
+                                    if (node.getChildren().get(i).getChildren().get(j).getChildren().size() > 0) {
+                                        localVariableTypeName = node.getChildren().get(i).getChildren().get(j).getChildren().get(0).get("type");
 
-                                            if (node.getChildren().get(i).getChildren().get(j).getChildren().get(0).getChildren().size() > 0) {
-                                                if (node.getChildren().get(i).getChildren().get(j).getChildren().get(0).getChildren().get(0).getKind().equals("IntArrayVarType")) {
-                                                    localVariableTypeIsArray = true;
-                                                }
+                                        if (node.getChildren().get(i).getChildren().get(j).getChildren().get(0).getChildren().size() > 0) {
+                                            if (node.getChildren().get(i).getChildren().get(j).getChildren().get(0).getChildren().get(0).getKind().equals("IntArrayVarType")) {
+                                                localVariableTypeIsArray = true;
                                             }
                                         }
-                                        methodLocalVariables.add(new Symbol(new Type(localVariableTypeName, localVariableTypeIsArray), localVariableName));
                                     }
+                                    methodLocalVariables.add(new Symbol(new Type(localVariableTypeName, localVariableTypeIsArray), localVariableName));
                                 }
                             }
-
                         }
+
+
 
                     }
 
