@@ -103,6 +103,10 @@ public class Main implements JmmParser {
 				e.printStackTrace();
 			}
 
+			AnalysisStage analysisStage = new AnalysisStage();
+			System.out.println("\n\n\n"+analysisStage.semanticAnalysis(result).getReports());
+
+			/*
 			SymbolTableManager symbolTable = new SymbolTableManager();
 
 			JmmNode jmmNode = JmmNode.fromJson(jsonTree);
@@ -114,6 +118,8 @@ public class Main implements JmmParser {
 			
 			System.out.println("-- SymbolTable --\n" + symbolTable);
 			//System.out.println(testVisitor.visit(jmmNode));
+
+			 */
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);

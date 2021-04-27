@@ -1,4 +1,5 @@
 import pt.up.fe.comp.jmm.JmmNode;
+import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
@@ -18,7 +19,9 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
     private Boolean populateSymbolTable(JmmNode node, SymbolTableManager symbolTable){
         switch(node.getKind()){
             case "Import":
-                symbolTable.addImports(node.get("importObject"));
+                if (node.getOptional("importObject").isPresent()){
+                    symbolTable.addImports(node.get("importObject"));
+                }
                 break;
             
             case "Class":

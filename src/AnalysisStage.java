@@ -2,6 +2,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.JmmNode;
@@ -33,8 +34,37 @@ public class AnalysisStage implements JmmAnalysis {
             return new JmmSemanticsResult(parserResult, null, Arrays.asList(errorReport));
         }
 
+
+        SymbolTableManager symbolTable = new SymbolTableManager();
+        List<Report> reports = new ArrayList<>();
         JmmNode node = parserResult.getRootNode();
 
+
+
+        //JmmNode jmmNode = JmmNode.fromJson(jsonTree);
+        FirstPreorderVisitor testVisitor = new FirstPreorderVisitor();
+        testVisitor.visit(node, symbolTable);
+
+        Analyser analyser = new Analyser(symbolTable, reports);
+
+        CheckErrorsVisitor checkErrorsVisitor = new CheckErrorsVisitor();
+        checkErrorsVisitor.visit(node, analyser);
+        System.out.println("hi visitor");
+
+       // this.result = new JmmSemanticsResult(this.node, symbolTable, reports);
+
+        //ExampleVisitor exampleVisitor = new ExampleVisitor("identifier", "id");
+
+        System.out.println("-- SymbolTable --\n" + symbolTable);
+        //System.out.println(testVisitor.visit(jmmNode));
+
+
+
+
+
+
+
+/*
         System.out.println("Dump tree with Visitor where you control tree traversal");
         ExampleVisitor visitor = new ExampleVisitor("Identifier", "id");
         System.out.println(visitor.visit(node, ""));
@@ -58,6 +88,9 @@ public class AnalysisStage implements JmmAnalysis {
         // No Symbol Table being calculated yet
         return new JmmSemanticsResult(parserResult, null, new ArrayList<>());
 
+ */
+
+        return new JmmSemanticsResult(node, analyser.getSymbolTable(), analyser.getReports());
     }
 
 }
