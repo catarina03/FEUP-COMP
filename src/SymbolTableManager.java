@@ -78,6 +78,10 @@ public class SymbolTableManager implements SymbolTable {
         return new ArrayList<>(this.classMethods.keySet());
     }
 
+    public ClassMethod getMethod(String methodKey){
+        return this.classMethods.get(methodKey);
+    }
+
     @Override
     public Type getReturnType(String methodName) {
         return this.classMethods.get(methodName).getReturnType();
