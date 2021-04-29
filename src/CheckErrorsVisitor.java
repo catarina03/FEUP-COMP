@@ -56,21 +56,29 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                 break;
 
             case "ArrayAccess":
-
-                for (int i = 0; i < node.getChildren().size(); i++){
-                    if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")){
-                        for (int j = 0; j < node.getChildren().get(i).getChildren().size(); j++){
-                            if (node.getChildren().get(i).getChildren().get(j).getKind().equals("Terminal")){
-                                for (String attribute : node.getChildren().get(i).getChildren().get(j).getAttributes()){
-                                    if(!attribute.equals("Integer")){
-                                        analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Array indices must be integer"));
-                                    }
-                                }
+                JmmNode arrayAccessUpperSibling = getUpperSibling(node);
+                if (arrayAccessUpperSibling != null && arrayAccessUpperSibling.getKind().equals("ExpressionTerminal")){
+                    for (int i = 0; i < arrayAccessUpperSibling.getNumChildren(); i++){
+                        if (arrayAccessUpperSibling.getChildren().get(i).getKind().equals("Terminal")){
+                            if (!arrayAccessUpperSibling.getChildren().get(i).getOptional("ID").isPresent()){
+                                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Array access should be done on an array"));
                             }
                         }
                     }
                 }
 
+                for (int i = 0; i < node.getChildren().size(); i++){
+                    if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")){
+                        for (int j = 0; j < node.getChildren().get(i).getChildren().size(); j++){
+                            if (node.getChildren().get(i).getChildren().get(j).getKind().equals("Terminal")){
+                                System.out.println(node.getChildren().get(i).getChildren().get(j));
+                                if (node.getChildren().get(i).getChildren().get(j).getOptional("Integer").isEmpty()){
+                                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Array indices must be integer"));
+                                }
+                            }
+                        }
+                    }
+                }
                 break;
 
             case "This":

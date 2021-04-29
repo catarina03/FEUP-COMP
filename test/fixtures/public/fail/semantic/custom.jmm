@@ -11,7 +11,7 @@ class T {
         int one;
         boolean two;
         boolean res;
-        res = !false;
+        res = oioioi[8];
 
         return 1;
     }
