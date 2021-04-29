@@ -9,11 +9,9 @@ class T {
 
     public int foo(boolean a){
         int one;
-        boolean bool;
-        int res;
-        one = 1;
-        bool = true;
-        res = one + bool;
+        boolean two;
+        boolean res;
+        res = !false;
 
         return 1;
     }
