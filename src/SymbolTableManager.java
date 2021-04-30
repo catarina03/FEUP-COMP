@@ -45,6 +45,10 @@ public class SymbolTableManager implements SymbolTable {
         this.className = className;
     }
 
+    public Boolean getClassExtends() {
+        return classExtends;
+    }
+
     public void setClassExtends(Boolean classExtends){
         this.classExtends = classExtends;
     }
@@ -56,7 +60,7 @@ public class SymbolTableManager implements SymbolTable {
 
     @Override
     public String getSuper() {
-        if (this.classExtends){
+        if (this.getClassExtends()){
             return this.classSuper;
         }
         else{

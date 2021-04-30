@@ -5,6 +5,7 @@ import java.util.List;
 public class Analyser {
     private SymbolTableManager symbolTable;
     private List<Report> reports;
+    private String result = "";
 
     public Analyser(SymbolTableManager symbolTable, List<Report> reports) {
         this.symbolTable = symbolTable;
@@ -21,5 +22,13 @@ public class Analyser {
 
     public void addReport(Report report){
         reports.add(report);
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 }

@@ -49,7 +49,9 @@ public class AnalysisStage implements JmmAnalysis {
 
         CheckErrorsVisitor checkErrorsVisitor = new CheckErrorsVisitor();
         checkErrorsVisitor.visit(node, analyser);
-        System.out.println("hi visitor");
+
+        //CheckErrorPostOrder checkErrorPostOrderVisitor = new CheckErrorPostOrder();
+        //checkErrorPostOrderVisitor.visit(node, analyser);
 
        // this.result = new JmmSemanticsResult(this.node, symbolTable, reports);
 
