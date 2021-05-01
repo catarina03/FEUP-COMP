@@ -2,26 +2,34 @@
     Types of arguments of calls must be compatible with the parameters of the method (only for methods of the class being compiled).
 */
 
+import io;
+
 class T {
     public static void main(String[] a) {
       io.println(10);
     }
 
     public int foo(boolean a){
-        //int[] one;
+        int[] one;
         int two;
-        boolean res;
+        int res;
+        Word ola;
 
+        two = oi.some(true);
+        two = new Word();
         res = false;
-        res = 7 + two * 3;
+        res = 7 + 2 * 3 - res;
+        two = 4 + 7;
+        two = true;
         this.foo(true);
         io.oi(1, 3, 4, 5);
         //io.length
 
-        while (true && res) {
+        if (true + one) {
 
 
         }
+        else { }
 
         return 1;
     }

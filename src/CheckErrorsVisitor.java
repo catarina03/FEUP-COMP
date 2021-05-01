@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
     public CheckErrorsVisitor() {
@@ -19,7 +20,7 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
         JmmNode parent = node.getParent();
         for (int i = 0; i < parent.getNumChildren(); i++) {
             if (node.toString().equals(parent.getChildren().get(i).toString())){
-                if (parent.getChildren().size() > i){
+                if (parent.getChildren().size() > i + 2){
                     return parent.getChildren().get(i+1);
                 }
             }
@@ -95,7 +96,7 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
 
             case "This":
                 JmmNode lowerSibling = this.getLowerSibling(node.getParent());
-                if (lowerSibling.getKind().equals("DotMethodCall")){
+                if (lowerSibling != null && lowerSibling.getKind().equals("DotMethodCall")){
                     ClassMethod method = analyser.getSymbolTable().getMethod(lowerSibling.get("DotMethodCall"));
                     if (method == null){
                         analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Method does not exist"));
@@ -150,6 +151,7 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
             case "Minus":
             case "Mul":
             case "Div":
+            case "Less":
                 JmmNode upperSibling = getUpperSibling(node);
                 JmmNode ancestor = node.getAncestor("MethodDeclaration").get();
                 String functionName = ancestor.get("functionName");
@@ -200,14 +202,17 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                         }
                     }
                 }
-
-                if (operandOne != null && operandTwo != null && (operandOne.getType().isArray() || operandTwo.getType().isArray())){
-                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Array cannot be used directly in arithmetic expressions"));
-                    break;
-                }
-                else if (operandOne == null || operandTwo == null || !operandOne.getType().getName().equals("int") || !operandTwo.getType().getName().equals("int")){
-                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
-                    break;
+                Optional<JmmNode> inWhile = node.getAncestor("While");
+                Optional<JmmNode> inIf = node.getAncestor("If");
+                if (inWhile.isEmpty() && inIf.isEmpty()){
+                    if (operandOne != null && operandTwo != null && (operandOne.getType().isArray() || operandTwo.getType().isArray())){
+                        analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Array cannot be used directly in arithmetic expressions"));
+                        break;
+                    }
+                    else if (operandOne == null || operandTwo == null || !operandOne.getType().getName().equals("int") || !operandTwo.getType().getName().equals("int")){
+                        analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+                        break;
+                    }
                 }
                 break;
 
@@ -238,10 +243,16 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                                         else if (andUpperSibling.getChildren().get(i).getChildren().get(j).getKind().equals("BooleanFalse")){
                                             andOperandOne = new Symbol(new Type("boolean", false), "");
                                         }
+                                        else if (andUpperSibling.getChildren().get(i).getChildren().get(j).getKind().equals("Not")){
+                                            andOperandOne = new Symbol(new Type("boolean", false), "");
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+                    else if (andUpperSibling.getKind().equals("And")){
+                        andOperandOne = new Symbol(new Type("boolean", false), "");
                     }
                 }
                 for (int i = 0; i < node.getNumChildren(); i++){
@@ -262,6 +273,9 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                                             andOperandTwo = new Symbol(new Type("boolean", false), "");
                                         }
                                         else if (node.getChildren().get(i).getChildren().get(j).getChildren().get(k).getKind().equals("BooleanFalse")){
+                                            andOperandTwo = new Symbol(new Type("boolean", false), "");
+                                        }
+                                        else if (node.getChildren().get(i).getChildren().get(j).getChildren().get(k).getKind().equals("Not")){
                                             andOperandTwo = new Symbol(new Type("boolean", false), "");
                                         }
                                     }
@@ -306,7 +320,7 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                         }
                     }
                 }
-                if (!notOperandOne.getType().getName().equals("boolean")){
+                if (notOperandOne == null || !notOperandOne.getType().getName().equals("boolean")){
                     analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Operand must be boolean"));
                     break;
                 }
