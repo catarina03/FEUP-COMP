@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import java_cup.runtime.int_token;
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
@@ -13,8 +14,19 @@ public class OllirProducer implements JmmVisitor{
     public SymbolTable table;
     public String code = "";
 
+    public List<Symbol> mainParameters;
+    public List<Symbol> methodParameters;
+    public List<Symbol> classFields;
+    public List<Symbol> scopeVariables;
+
+    public int tempVarNum = 0;
+    public int objectsCount = 0;
+
+
     OllirProducer(SymbolTable table){
         this.table=table;
+
+        this.classFields=table.getFields();
     }
 
 
@@ -107,6 +119,11 @@ public class OllirProducer implements JmmVisitor{
     }
 
     private void generateMain(JmmNode node) {
+
+        if (table.getLocalVariables("main") != null) {
+            this.scopeVariables = table.getLocalVariables("main");
+        }
+
         generateMainHeader(node);
         generateMainBody(node);
         code+="\t}\n";
@@ -116,7 +133,7 @@ public class OllirProducer implements JmmVisitor{
         String mainArgs="";
         String mainReturnType="";
 
-        List<Symbol> mainParameters = table.getParameters("main");
+        mainParameters = table.getParameters("main");
         List<String> mainParametersNames =  new ArrayList<>();
 
         for (Symbol param : mainParameters) {
@@ -151,6 +168,11 @@ public class OllirProducer implements JmmVisitor{
     }
 
     private void generateMethod(JmmNode node) {
+
+        if (table.getLocalVariables(node.get("functionName")) != null) {
+            this.scopeVariables = table.getLocalVariables(node.get("functionName"));
+        }
+
         generateMethodHeader(node);
         generateMethodBody(node);
         code+="\t}\n";
@@ -161,7 +183,7 @@ public class OllirProducer implements JmmVisitor{
         String methodReturnType = "";
 
         String methodName = methodNode.get("functionName");
-        List<Symbol> methodParameters = table.getParameters(methodName);
+        methodParameters = table.getParameters(methodName);
         List<String> methodParametersNames = new ArrayList<>();
 
         if (methodParameters != null) {
@@ -217,7 +239,59 @@ public class OllirProducer implements JmmVisitor{
         String varKind = returnNode.getKind();
         String var = null;
 
-        //TODO: COMPLETE THIS WINK WINK
+        List<String> classFieldsNames = new ArrayList<>();
+        if (classFields != null) {
+            for (Symbol field : classFields) {
+                classFieldsNames.add(field.getName());
+            }
+        }
+
+        if(varKind.equals("IDstatement")|| varKind.equals("VarDeclaration")) {
+            var = returnNode.get("name");
+
+            String t = getNodeType(returnNode);
+            
+
+            if(classFieldsNames.contains(returnNode.get("name"))) {
+                Symbol s = new Symbol(new Type(t.substring(0, t.length()-2), t.contains("[]")), "t"+tempVarNum++);
+
+                if(t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]") || t.equals("boolean")) {
+                    Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
+                    code += "\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(" + o.getName() + "." + getType(t) + ", " + returnNode.get("name") + "." + getType(t) + ")." + getType(t) + ";\n";
+                }
+                else {
+                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(this" + ", " + returnNode.get("name") + "." + getType(t) + ")." + getType(t) + ";\n";
+                }
+                var = s.getName();
+                varKind = t;
+            }
+            else {
+                List<String> methodParametersNames = new ArrayList<>();
+                if (methodParameters != null) {
+                    for (Symbol param : methodParameters) {
+                        methodParametersNames.add(param.getName());
+                    }
+                }
+
+                if(methodParametersNames.contains(returnNode.get("name"))) {
+                    int idx = methodParametersNames.indexOf(returnNode.get("name")) + 1;
+                    var = "$" + idx + "." + returnNode.get("name");
+                    varKind = methodParameters.get(idx - 1).getType().getName();
+                    if(methodParameters.get(idx - 1).getType().isArray()) {
+                        varKind += "[]";
+                    }
+                }
+                else {
+                    var = returnNode.get("name");
+                    varKind = t;
+                }
+            }
+        }
+        //TODO: else if(varKind.equals("TwoPartExpression")) {
+        
+        else {
+            var = returnNode.get("ID");
+        }
 
         code += "\n\t\tret." + getType(returnType) + " " + var + "." + getType(varKind) + ";\n";
     }
@@ -239,5 +313,51 @@ public class OllirProducer implements JmmVisitor{
             default:
                 return type;
         }
+    }
+
+    public String getNodeType(JmmNode node) {
+        String type;
+
+        List<String> methodParametersNames = new ArrayList<>();
+        List<String> scopeVariablesNames = new ArrayList<>();
+        List<String> classFieldsNames = new ArrayList<>();
+
+        if (methodParameters != null) {
+            for (Symbol param : methodParameters) {
+                methodParametersNames.add(param.getName());
+            }
+        }
+        if (scopeVariables != null) {
+            for (Symbol var : scopeVariables) {
+                scopeVariablesNames.add(var.getName());
+            }
+        }
+        if (classFields != null) {
+            for (Symbol field : classFields) {
+                classFieldsNames.add(field.getName());
+            }
+        }
+
+
+        if (methodParametersNames.contains(node.get("name"))) {
+            int i = methodParametersNames.indexOf(node.get("name"));
+            type = methodParameters.get(i).getType().getName();
+            if (methodParameters.get(i).getType().isArray()) {
+                type += "[]";
+            }
+        } else if (scopeVariablesNames.contains(node.get("name"))) {
+            int i = scopeVariablesNames.indexOf(node.get("name"));
+            type = scopeVariables.get(i).getType().getName();
+            if (scopeVariables.get(i).getType().isArray()) {
+                type += "[]";
+            }
+        } else {
+            int i = classFieldsNames.indexOf(node.get("name"));
+            type = classFields.get(i).getType().getName();
+            if (classFields.get(i).getType().isArray()) {
+                type += "[]";
+            }
+        }
+        return type;
     }
 }
