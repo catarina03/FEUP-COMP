@@ -30,6 +30,7 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
         addVisit("DotMethodCall", this::dealWithDotMethod);
         addVisit("TypeObject", this::dealWithTypeObject);
         addVisit("This", this::dealWithThis);
+        addVisit("Condition", this::dealWithCondition);
         //setDefaultVisit(this::checkSemanticErrors);
 
         //getDistantNode("MethodDeclaration");
@@ -43,7 +44,7 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
         for (int i = 0; i < returnList.size(); i++){
             if (returnList.get(i) == null || !returnList.get(i).equals("boolean")){
                 analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), node.getKind() +" expression should result in a boolean"));
-                return "Error";
+                return "error";
             }
         }
         return "boolean";
@@ -79,7 +80,8 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
     private String dealWithExpressionTerminal(JmmNode node, Analyser analyser){
         if (node.getOptional("ID").isPresent()){
             String varName = node.getOptional("ID").get();
-            if (getDistantNode(node,"MethodDeclaration").isPresent()){
+            if (getDistantNode(node,"MethodDeclaration").isPresent()){ ;
+                // GETS VAR SYMBOL
                 boolean isMain = false;
                 for (int ch = 0; ch < node.getNumChildren(); ch++){
                     if (getDistantNode(node,"MethodDeclaration").get().getChildren().get(ch).getKind().equals("Main")){
@@ -87,7 +89,7 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                     }
                 }
                 boolean hasFunctionName = false;
-                if (node.getOptional("functionName").isPresent()){
+                if (getDistantNode(node,"MethodDeclaration").get().getOptional("functionName").isPresent()){
                     hasFunctionName = true;
                 }
                 if (isMain || hasFunctionName){
@@ -98,6 +100,7 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                     else if (isMain){
                         methodName = "main";
                     }
+                    // CHECKS IF VAR IS A LOCAL VAR
                     ArrayList<Symbol> localVars = analyser.getSymbolTable().getMethod(methodName).getLocalVariables();
                     Symbol localVar = null;
                     for (int i = 0; i < localVars.size(); i++){
@@ -105,8 +108,19 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                             localVar = localVars.get(i);
                         }
                     }
+                    // CHECKS IF VAR IS PARAMETER
+                    Symbol param = null;
+                    for (Symbol par : analyser.getSymbolTable().getMethod(methodName).getMethodParameters()){
+                        if (par.getName().equals(varName)){
+                            param = par;
+                        }
+                    }
+
                     if (localVar != null){
                         return localVar.getType().getName();
+                    }
+                    else if (param != null){
+                        return param.getType().getName();
                     }
                     else {
                         return "error";
@@ -121,6 +135,36 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
     }
 
     private String dealWithLess(JmmNode node, Analyser analyser){
+        // OPERAND 2
+        boolean isDotMethod = false;
+        for (int i = 0; i < node.getNumChildren(); i++){
+            if (node.getChildren().get(i).getKind().equals("DotMethodCall")){
+                isDotMethod = true;
+                if(!visit(node.getChildren().get(i), analyser).equals("int")){
+                    System.out.println("1 "+visit(node.getChildren().get(i), analyser));
+                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+                    return "error";
+                }
+            }
+        }
+        if (!isDotMethod){
+            if(!visit(node.getChildren().get(0), analyser).equals("int")){
+                System.out.println("2 "+visit(node.getChildren().get(0), analyser));
+                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+                return "error";
+            }
+        }
+
+        // OPERAND 1
+        if(getUpperSibling(node).isPresent() && !visit(getUpperSibling(node).get(), analyser).equals("int")){
+            System.out.println(getUpperSibling(node));
+            System.out.println("3 "+visit(getUpperSibling(node).get(), analyser));
+            analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+            return "error";
+        }
+        //return "int";
+
+
         return "boolean";
     }
 
@@ -143,8 +187,6 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
             if (methodNode.get().getOptional("functionName").isPresent()){
                 hasFunctionName = true;
             }
-            //String functionName = methodNode.get().getOptional("functionName")
-
             if (methodNode.isPresent() && (isMain || hasFunctionName)){
                 ClassMethod method = null;
                 if (hasFunctionName){
@@ -153,7 +195,6 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                 else if (isMain){
                     method = analyser.getSymbolTable().getMethod("main");
                 }
-
                 Symbol assignmentVar = null;
                 for (int j = 0; j < method.getLocalVariables().size(); j++){
                     if (method.getLocalVariables().get(j).getName().equals( node.get("ID"))){
@@ -161,51 +202,144 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                     }
                 }
                 if (assignmentVar != null){
-                    List<String> returnList = new ArrayList<>();
+                    boolean isDotMethod = false;
+                    boolean hasDotMethod = false;
                     for (int i = 0; i < node.getNumChildren(); i++){
-                        if (!node.getChildren().get(i).getKind().equals("VarAssignment")){
-                            returnList.add(visit(node.getChildren().get(i), analyser));
+                        // FOR DOT METHODS
+                        if (node.getChildren().get(i).getKind().equals("DotMethodCall")){
+                            isDotMethod = true;
+                            hasDotMethod = true;
                         }
-                    }
-                    for (int i = 0; i < returnList.size(); i++){
-                        if (!assignmentVar.getType().isArray()){
-                            if (returnList.get(i).equals("this")){
-                                continue;
+                        if (isDotMethod){
+                            String methodCallName = null;
+                            if (node.getChildren().get(i).getOptional("DotMethodCall").isPresent()){
+                                methodCallName = node.getChildren().get(i).getOptional("DotMethodCall").get();
                             }
-                            //imports
-                            if (returnList.get(i).equals("unknown")){
-                                if (this.getUpperSibling(node).isPresent()){
-                                    if(visit(this.getUpperSibling(node).get()).equals("this")){
-                                        if(!analyser.getSymbolTable().getClassExtends()){
-                                            analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Undeclared function"));
+                            ClassMethod methodCall = analyser.getSymbolTable().getMethod(methodCallName);
+                            if (i-1 >= 0){
+                                if(node.getChildren().get(i-1).getKind().equals("ExpressionTerminal")){
+                                    if (node.getChildren().get(i-1).getOptional("ID").isPresent()){
+                                        String target = node.getChildren().get(i-1).getOptional("ID").get();
+                                        boolean isLocalVar = false;
+                                        Symbol targetVar = null;
+                                        for (Symbol localVar : analyser.getSymbolTable().getLocalVariables(method.getMethodName())){
+                                            if (target.equals(localVar.getName())){
+                                                targetVar = localVar;
+                                                isLocalVar = true;
+                                            }
+                                        }
+                                        boolean isParam = false;
+                                        for (Symbol localVar : analyser.getSymbolTable().getParameters(method.getMethodName())){
+                                            if (target.equals(localVar.getName())){
+                                                targetVar = localVar;
+                                                isParam = true;
+                                            }
+                                        }
+                                        if (target.equals("this") || (targetVar != null && targetVar.getType().getName().equals(analyser.getSymbolTable().getClassName()))){
+                                            if (methodCall == null && analyser.getSymbolTable().getClassExtends()){
+                                                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Class method " + methodCallName +"is not declared"));
+                                                return "error";
+                                            }
+                                        }
+                                        else {
+                                            for (Symbol variable : analyser.getSymbolTable().getLocalVariables(methodCallName)){
+                                                if (variable.getName().equals(target)){
+                                                    boolean isPresent = false;
+                                                    for (String importVar : analyser.getSymbolTable().getImports()){
+                                                        if (variable.getType().getName().equals(importVar)){
+                                                            isPresent = true;
+                                                        }
+                                                    }
+                                                    if (variable.getType().getName().equals(analyser.getSymbolTable().getClassName())){
+                                                        isPresent = true;
+                                                    }
+                                                    if (variable.getType().getName().equals(analyser.getSymbolTable().getSuper())){
+                                                        isPresent = true;
+                                                    }
+                                                    if(!isPresent){
+                                                        analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Target " + target +"is not present"));
+                                                        return "error";
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                     else {
-                                        boolean importExists = false;
-                                        for (int j = 0; j < analyser.getSymbolTable().getImports().size(); j++){
-                                            if (visit(this.getUpperSibling(node).get()).equals(analyser.getSymbolTable().getImports().get(j))){
-                                                importExists = true;
-                                            }
-                                        }
-                                        if (!importExists){
-                                            analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Function target not recognized"));
+                                        System.out.println("1: "+visit(node.getChildren().get(i), analyser));
+                                        if(visit(node.getChildren().get(i), analyser).equals("int") || visit(node.getChildren().get(i), analyser).equals("boolean")){
+                                            analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Invalid target"));
+                                            return "error";
                                         }
                                     }
                                 }
-                                continue;
+                                else {
+                                    System.out.println("2 exp not terminal: "+node.getChildren().get(i));
+                                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Invalid target"));
+                                    return "error";
+                                }
                             }
-                            if (!returnList.get(i).equals(assignmentVar.getType().getName())){
+                            /*
+                            System.out.println("NODE: "+node);
+                            System.out.println("CHILDREN: "+node.getChildren().get(i));
+                            String visitResult = visit(node.getChildren().get(i), analyser);
+                            if (!visitResult.equals(assignmentVar.getType().getName())){
                                 analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Incompatible types"));
                                 return "error";
                             }
-                        }
-                        else {
-                            if (!returnList.get(i).equals("intArray")){
-                                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Incompatible types"));
-                                return "error";
-                            }
+
+                             */
+                            isDotMethod = false;
                         }
 
+
+                    }
+
+                    if (!hasDotMethod){
+                        List<String> returnList = new ArrayList<>();
+                        for (int i = 0; i < node.getNumChildren(); i++){
+                            if (!node.getChildren().get(i).getKind().equals("VarAssignment")){
+                                returnList.add(visit(node.getChildren().get(i), analyser));
+                            }
+                        }
+                        for (int i = 0; i < returnList.size(); i++){
+                            if (!assignmentVar.getType().isArray()){
+                                if (returnList.get(i).equals("this") || returnList.get(i).equals(analyser.getSymbolTable().getClassName())){
+                                    continue;
+                                }
+                                //imports
+                                if (returnList.get(i).equals("unknown")){
+                                    if (this.getUpperSibling(node).isPresent()){
+                                        if(visit(this.getUpperSibling(node).get(), analyser).equals("this")){
+                                            if(!analyser.getSymbolTable().getClassExtends()){
+                                                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Undeclared function"));
+                                            }
+                                        }
+                                        else {
+                                            boolean importExists = false;
+                                            for (int j = 0; j < analyser.getSymbolTable().getImports().size(); j++){
+                                                if (visit(this.getUpperSibling(node).get(), analyser).equals(analyser.getSymbolTable().getImports().get(j))){
+                                                    importExists = true;
+                                                }
+                                            }
+                                            if (!importExists){
+                                                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Function target not recognized"));
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                }
+                                if (!returnList.get(i).equals(assignmentVar.getType().getName())){
+                                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Incompatible types"));
+                                    return "error";
+                                }
+                            }
+                            else {
+                                if (!returnList.get(i).equals("intArray")){
+                                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Incompatible types"));
+                                    return "error";
+                                }
+                            }
+                        }
                     }
                     return assignmentVar.getType().getName(); //TODO KINDA WRONG BUT KINDA USELESS
                 }
@@ -219,6 +353,33 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
     }
 
     private String dealWithArithmeticOp(JmmNode node, Analyser analyser){
+        // OPERAND 2
+        boolean isDotMethod = false;
+        for (int i = 0; i < node.getNumChildren(); i++){
+            if (node.getChildren().get(i).getKind().equals("DotMethodCall")){
+                isDotMethod = true;
+                if(!visit(node.getChildren().get(i), analyser).equals("int")){
+                    System.out.println("1 "+visit(node.getChildren().get(i), analyser));
+                    analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+                    return "error";
+                }
+            }
+        }
+        if (!isDotMethod){
+            if(!visit(node.getChildren().get(0), analyser).equals("int")){
+                System.out.println("2 "+visit(node.getChildren().get(0), analyser));
+                analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+                return "error";
+            }
+        }
+
+        // OPERAND 1
+        if(getUpperSibling(node).isPresent() && !visit(getUpperSibling(node).get(), analyser).equals("int")){
+            System.out.println(getUpperSibling(node));
+            System.out.println("3 "+visit(getUpperSibling(node).get(), analyser));
+            analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Both operands must be integers"));
+            return "error";
+        }
         return "int";
     }
 
@@ -232,6 +393,10 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
 
     private String dealWithArrayAccess(JmmNode node, Analyser analyser){
         return "int";
+    }
+
+    private String dealWithCondition(JmmNode node, Analyser analyser){
+        return "boolean";
     }
 
     private String dealWithDotMethod(JmmNode node, Analyser analyser){
