@@ -80,19 +80,37 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
         if (node.getOptional("ID").isPresent()){
             String varName = node.getOptional("ID").get();
             if (getDistantNode(node,"MethodDeclaration").isPresent()){
-                String methodName = getDistantNode(node,"MethodDeclaration").get().get("functionName");
-                ArrayList<Symbol> localVars = analyser.getSymbolTable().getMethod(methodName).getLocalVariables();
-                Symbol localVar = null;
-                for (int i = 0; i < localVars.size(); i++){
-                    if (localVars.get(i).getName().equals(varName)){
-                        localVar = localVars.get(i);
+                boolean isMain = false;
+                for (int ch = 0; ch < node.getNumChildren(); ch++){
+                    if (getDistantNode(node,"MethodDeclaration").get().getChildren().get(ch).getKind().equals("Main")){
+                        isMain = true;
                     }
                 }
-                if (localVar != null){
-                    return localVar.getType().getName();
+                boolean hasFunctionName = false;
+                if (node.getOptional("functionName").isPresent()){
+                    hasFunctionName = true;
                 }
-                else {
-                    return "error";
+                if (isMain || hasFunctionName){
+                    String methodName = null;
+                    if (hasFunctionName){
+                        methodName = getDistantNode(node,"MethodDeclaration").get().get("functionName");
+                    }
+                    else if (isMain){
+                        methodName = "main";
+                    }
+                    ArrayList<Symbol> localVars = analyser.getSymbolTable().getMethod(methodName).getLocalVariables();
+                    Symbol localVar = null;
+                    for (int i = 0; i < localVars.size(); i++){
+                        if (localVars.get(i).getName().equals(varName)){
+                            localVar = localVars.get(i);
+                        }
+                    }
+                    if (localVar != null){
+                        return localVar.getType().getName();
+                    }
+                    else {
+                        return "error";
+                    }
                 }
             }
         }
@@ -107,7 +125,6 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
     }
 
     private String dealWithIDStatement(JmmNode node, Analyser analyser){
-        System.out.println("HELOOOOO: "+node);
         Optional<JmmNode> methodNode = getDistantNode(node, "MethodDeclaration");
         boolean isAssignment = false;
         for (int i = 0; i < node.getNumChildren(); i++){
@@ -116,15 +133,33 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
             }
         }
         if (isAssignment){
-            if (methodNode.isPresent() && !methodNode.get().getOptional("functionName").isEmpty()){
-                ClassMethod method = analyser.getSymbolTable().getMethod(methodNode.get().get("functionName"));
+            boolean isMain = false;
+            for (int ch = 0; ch < methodNode.get().getNumChildren(); ch++){
+                if (methodNode.get().getChildren().get(ch).getKind().equals("Main")){
+                    isMain = true;
+                }
+            }
+            boolean hasFunctionName = false;
+            if (methodNode.get().getOptional("functionName").isPresent()){
+                hasFunctionName = true;
+            }
+            //String functionName = methodNode.get().getOptional("functionName")
+
+            if (methodNode.isPresent() && (isMain || hasFunctionName)){
+                ClassMethod method = null;
+                if (hasFunctionName){
+                    method = analyser.getSymbolTable().getMethod(methodNode.get().get("functionName"));
+                }
+                else if (isMain){
+                    method = analyser.getSymbolTable().getMethod("main");
+                }
+
                 Symbol assignmentVar = null;
                 for (int j = 0; j < method.getLocalVariables().size(); j++){
                     if (method.getLocalVariables().get(j).getName().equals( node.get("ID"))){
                         assignmentVar = method.getLocalVariables().get(j);
                     }
                 }
-                System.out.println("LOCAL VAR? " + assignmentVar);
                 if (assignmentVar != null){
                     List<String> returnList = new ArrayList<>();
                     for (int i = 0; i < node.getNumChildren(); i++){
@@ -133,8 +168,6 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                         }
                     }
                     for (int i = 0; i < returnList.size(); i++){
-                        System.out.println("RETURN LIST TYPE: " + returnList.get(i));
-                        System.out.println("ASSIGMENT TYPE: " + assignmentVar.getType().getName());
                         if (!assignmentVar.getType().isArray()){
                             if (returnList.get(i).equals("this")){
                                 continue;
@@ -162,7 +195,6 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
                                 continue;
                             }
                             if (!returnList.get(i).equals(assignmentVar.getType().getName())){
-                                System.out.println("HEREEEEEEEEEEEEEE");
                                 analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Incompatible types"));
                                 return "error";
                             }
