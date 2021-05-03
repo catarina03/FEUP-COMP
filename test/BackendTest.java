@@ -40,12 +40,14 @@ public class BackendTest {
         null, new ArrayList<>()));
 
     }
-
+*/
     @Test
     public void testJasminFromOllir() {
         var res = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir")),
                 null, new ArrayList<>()));
 
     }
+
+
 
 }
