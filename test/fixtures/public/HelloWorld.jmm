@@ -7,6 +7,11 @@ class HelloWorld {
 		return test_arr;
 	}
 
+	public HelloWorld get_hello() {
+		HelloWorld a;
+		return a;
+	}
+
 	public static void main(String[] args) {
 		ioPlus.printHelloWorld();
 	}
