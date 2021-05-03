@@ -42,12 +42,10 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
         JmmNode leftChild = node.getChildren().get(0);
         JmmNode rightChild = node.getChildren().get(1);
         boolean leftboolean = visit(leftChild);
-        System.out.println(node.get("Integer"));
         return false;
     }
 
     private Boolean dealWithInt(JmmNode node, Analyser analyser){
-        System.out.println(node.get("Integer"));
         return false;
     }
 
@@ -84,7 +82,6 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                     if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")){
                         for (int j = 0; j < node.getChildren().get(i).getChildren().size(); j++){
                             if (node.getChildren().get(i).getChildren().get(j).getKind().equals("Terminal")){
-                                System.out.println(node.getChildren().get(i).getChildren().get(j));
                                 if (node.getChildren().get(i).getChildren().get(j).getOptional("Integer").isEmpty()){
                                     analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Array indices must be integer"));
                                 }
@@ -112,8 +109,6 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                         if (lowerSibling.getChildren().get(i).getKind().equals("ExpressionTerminal")){
                             for (int j = 0; j < lowerSibling.getChildren().get(i).getNumChildren(); j++){
                                 if (lowerSibling.getChildren().get(i).getChildren().get(j).getKind().equals("Terminal")){
-                                    System.out.println(lowerSibling.getChildren().get(i).getChildren().get(j));
-                                    System.out.println(method.getMethodParameters().get(i).getType());
 
                                     if (method.getMethodParameters().get(i).getType().getName().equals("int")){
                                         if (lowerSibling.getChildren().get(i).getChildren().get(j).getNumChildren() > 0){
@@ -126,14 +121,10 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                                         }
                                     }
                                     else if (method.getMethodParameters().get(i).getType().getName().equals("boolean")){
-                                        System.out.println("Needs boolean");
-                                        System.out.println("This node: "+lowerSibling.getChildren().get(i).getChildren().get(j));
-                                        System.out.println("No of children of node:"+lowerSibling.getChildren().get(i).getChildren().get(j).getNumChildren());
                                         if (lowerSibling.getChildren().get(i).getChildren().get(j).getNumChildren() == 0){
                                             analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Method call requires boolean argument"));
                                         }
                                         for (int k = 0; k < lowerSibling.getChildren().get(i).getChildren().get(j).getNumChildren(); k++){
-                                            System.out.println(lowerSibling.getChildren().get(i).getChildren().get(j).getChildren().get(k).getKind());
                                             if (!lowerSibling.getChildren().get(i).getChildren().get(j).getChildren().get(k).getKind().equals("BooleanTrue") &&
                                                     !lowerSibling.getChildren().get(i).getChildren().get(j).getChildren().get(k).getKind().equals("BooleanFalse")){
                                                 analyser.addReport(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.parseInt(node.get("line")), Integer.parseInt(node.get("col")), "Method call requires boolean argument"));
