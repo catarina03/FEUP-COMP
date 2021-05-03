@@ -24,7 +24,7 @@ import pt.up.fe.specs.util.SpecsIo;
 import java.util.ArrayList;
 
 public class BackendTest {
-
+/*
     @Test
     public void testHelloWorld() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));

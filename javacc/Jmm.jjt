@@ -1,6 +1,7 @@
 options
 {
     LOOKAHEAD=1;
+    NODE_SCOPE_HOOK=true;
 }
 
 PARSER_BEGIN(Jmm)
@@ -19,20 +20,18 @@ public class Jmm{
    public static void main(String args[]) throws ParseException {
       System.out.println("Write an arithmetic expression:");
       Jmm myJmm = new Jmm(System.in);
-      //SimpleNode root = myJmm.Program(); // returns reference to root node
       SimpleNode root = myJmm.While(); // returns reference to root node
          
       root.dump(""); // prints the tree on the screen
-
-      //System.out.println("Expression value: "+myJmm.eval(root));
    }
 
-   //Not needed bc reports is public
-   /*
-   public ArrayList<Report> getReports(){
-      return reports;
+  void jjtreeOpenNodeScope(Node n) {
+       ((SimpleNode)n).put("line", Integer.toString(getToken(1).beginLine));
+       ((SimpleNode)n).put("col", Integer.toString(getToken(1).beginColumn));
    }
-   */
+
+   void jjtreeCloseNodeScope(Node n) {
+   }
 	
 }
 
@@ -119,14 +118,24 @@ void VarDeclaration() #VarDeclaration: {Token t;}
    Type() t = <IDENTIFIER>{jjtThis.put("variable", t.image);} <SEMICOLON>
 }
 
-void MethodDeclaration() #MethodDeclaration: {Token t,w;}
+void ArgDeclaration() #ArgDeclaration: {Token t;}
+{
+   Type() t = <IDENTIFIER>{jjtThis.put("variable", t.image);}
+}
+
+void MethodDeclaration() #MethodDeclaration: {Token t,w,x,y;}
 {
    <PUBLIC>
    (
       (
-          Type() t=<IDENTIFIER>{jjtThis.put("functionName", t.image);}
+          Type() #ReturnType t=<IDENTIFIER>{jjtThis.put("functionName", t.image);}
           <LPAR> { this.parenthesisCounter++; }
-            ( Type() w=<IDENTIFIER> ( <COMMA> Type() <IDENTIFIER> )*{jjtThis.put("arguments", w.image);} )?
+            ( 
+               ArgDeclaration()
+               (
+                   <COMMA> ArgDeclaration()
+               )* 
+            )?
           <RPAR> { parenthesisCounter--; }
           <LBRACKET>
               MethodBody()
@@ -136,7 +145,7 @@ void MethodDeclaration() #MethodDeclaration: {Token t,w;}
       |
       (
           <STATIC> <VOID> <MAIN> #Main
-          <LPAR> { this.parenthesisCounter++; } <STRING> <LSQRBRACKET> <RSQRBRACKET> <IDENTIFIER> <RPAR> { parenthesisCounter--; } #MainParameters
+          <LPAR> { this.parenthesisCounter++; } <STRING> <LSQRBRACKET> <RSQRBRACKET> y=<IDENTIFIER>{jjtThis.put("variable", y.image);} #MainArguments <RPAR> { parenthesisCounter--; }
           <LBRACKET>
               MethodBody()
           <RBRACKET>
@@ -152,7 +161,7 @@ void MethodBody() #MethodBody: {}
 
 void Type() #Type: {Token t;}
 {
-   t = <INT> ( <LSQRBRACKET> <RSQRBRACKET> #IntArrayVar )?{jjtThis.put("type", t.image);}
+   t = <INT> ( <LSQRBRACKET> <RSQRBRACKET> #IntArrayVarType )?{jjtThis.put("type", t.image);}
    | t = <BOOLEAN>{jjtThis.put("type", t.image);} 
    | t = <IDENTIFIER>{jjtThis.put("type", t.image);} 
    
@@ -308,9 +317,9 @@ void ExpressionSwitchFromDOT() #void: {}
 }
 
 //TODO: verificar se esta anotação AST funciona!!! e fica no sítio correto
-void ExpressionArrayIndexing() #void :{}
+void ExpressionArrayIndexing() #void  :{}
 {
-   ( <LSQRBRACKET> Expression() <RSQRBRACKET> #ArrayAccess ExpressionArrayIndexing() )
+   ( <LSQRBRACKET> Expression() #ArrayAccess <RSQRBRACKET> ExpressionArrayIndexing() )
    |
    {}
 }
@@ -350,7 +359,7 @@ void ExpressionSwitchFromDOTWithoutID() #void: {}
 
 //TERMINAL BLOCKS
 
-void ExpressionTerminal() #Terminal: {Token t;}
+void ExpressionTerminal() #ExpressionTerminal: {Token t;}
 {
    ExpressionTerminalWithoutID()
    |
@@ -365,12 +374,12 @@ void ExpressionTerminalWithoutID() #Terminal : {Token t;}
       | <THIS> #This
       | <NEW>
       ( 
-         ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) #IntArrayVar   //TODO: verificar se esta anotação fica bem aqui (repetida em cima)
+         ( <INT> <LSQRBRACKET> Expression() <RSQRBRACKET> ) #IntArrayVar
         |
          ( t=<IDENTIFIER>{jjtThis.put("Object", t.image);} <LPAR> { this.parenthesisCounter++; } <RPAR> { this.parenthesisCounter--; } ) #TypeObject
       ) #New
       | <NOT> Expression() #Not
-      | <LPAR> { this.parenthesisCounter++; } Expression() <RPAR> { this.parenthesisCounter--; }
+      | <LPAR> { this.parenthesisCounter++; } Expression() <RPAR> { this.parenthesisCounter--; }  //TODO: COLOCAR AQUI ANOTAÇAO?
 }
 
 
