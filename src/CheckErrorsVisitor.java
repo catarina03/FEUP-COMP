@@ -20,7 +20,7 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
         JmmNode parent = node.getParent();
         for (int i = 0; i < parent.getNumChildren(); i++) {
             if (node.toString().equals(parent.getChildren().get(i).toString())){
-                if (parent.getChildren().size() > i + 2){
+                if (parent.getChildren().size() >= i + 2){
                     return parent.getChildren().get(i+1);
                 }
             }
@@ -137,7 +137,7 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                     }
                 }
                 break;
-
+/*
             case "Plus":
             case "Minus":
             case "Mul":
@@ -206,6 +206,8 @@ public class CheckErrorsVisitor extends PreorderJmmVisitor<Analyser, Boolean> {
                     }
                 }
                 break;
+
+ */
 
             case "And":
                 JmmNode andUpperSibling = getUpperSibling(node);
