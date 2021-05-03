@@ -116,7 +116,7 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
             }
         }
         if (isAssignment){
-            if (methodNode.isPresent() && !methodNode.get().get("functionName").isEmpty()){
+            if (methodNode.isPresent() && !methodNode.get().getOptional("functionName").isEmpty()){
                 ClassMethod method = analyser.getSymbolTable().getMethod(methodNode.get().get("functionName"));
                 Symbol assignmentVar = null;
                 for (int j = 0; j < method.getLocalVariables().size(); j++){

@@ -1,5 +1,12 @@
 import ioPlus;
 class HelloWorld {
+
+	int[] test_arr;
+
+	public int[] get_array() {
+		return test_arr;
+	}
+
 	public static void main(String[] args) {
 		ioPlus.printHelloWorld();
 	}

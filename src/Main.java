@@ -106,6 +106,9 @@ public class Main implements JmmParser {
 			AnalysisStage analysisStage = new AnalysisStage();
 			System.out.println("\n\n\n"+analysisStage.semanticAnalysis(result).getReports());
 
+			//Ollir
+			OptimizationStage optimizationStage = new OptimizationStage();
+			optimizationStage.toOllir(analysisStage.semanticAnalysis(result));
 			/*
 			SymbolTableManager symbolTable = new SymbolTableManager();
 

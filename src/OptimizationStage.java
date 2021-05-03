@@ -34,7 +34,7 @@ public class OptimizationStage implements JmmOptimization {
         prod.visit(node); // TODO: Convert node ... transformar AST em código ollir (string ollir) 
         String ollirCode = prod.code;
 
-        System.out.println("Ollir code:" + ollirCode);
+        System.out.println("Ollir code:\n" + ollirCode);
 
         // TODO: More reports from this stage: should we user out Analyser??
         List<Report> reports = new ArrayList<>();
