@@ -7,8 +7,12 @@ class HelloWorld {
 		return test_arr;
 	}
 
-	public HelloWorld get_hello() {
-		HelloWorld a;
+	public boolean get_hello() {
+		boolean a;
+		boolean b;
+		a=true;
+		b=false;
+		a=b;
 		return a;
 	}
 

@@ -3,7 +3,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import java_cup.runtime.int_token;
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
@@ -32,15 +31,6 @@ public class OllirProducer implements JmmVisitor{
 
     @Override
     public Object visit(JmmNode node, Object data) {
-        /*
-         * System.out.println("\n\nNODE: "); System.out.println("String: "
-         * +node.toString()); System.out.println("Type: " +
-         * node.getClass().getComponentType()); System.out.println("Kind: " +
-         * node.getKind()); System.out.println("Class: " + node.getClass());
-         * System.out.println("Attributes: " + node.getAttributes());
-         * System.out.println("Children: " + node.getChildren());
-         */
-
         switch (node.getKind()) {
             case "Class":
                 generateClass(node);
@@ -49,8 +39,6 @@ public class OllirProducer implements JmmVisitor{
         return defaultVisit(node, "");
     }
 
-
-    //TODO: mudar isto ihih
     private String defaultVisit(JmmNode node, String space) {
         String content = space + node.getKind();
         String attrs = node.getAttributes().stream().filter(a -> !a.equals("line")).map(a -> a + "=" + node.get(a))
@@ -75,7 +63,7 @@ public class OllirProducer implements JmmVisitor{
         code+=table.getClassName() + "{\n";
 
         generateClassFields(classNode);
-        generateConstructor();  //TODO: é suposto chamar esta função sempre mesmo quando não tem construtor???
+        generateConstructor();
 
         List<JmmNode> children = classNode.getChildren();
         for (JmmNode child : children) {
@@ -105,12 +93,8 @@ public class OllirProducer implements JmmVisitor{
         String varName = node.get("variable");
         String varType = null;
 
-        if (typeNode.getKind().equals("Identifier")) {
-            varType = typeNode.get("variable"); // TODO: testar isto oopsie
-        } else {
-            varType = typeNode.get("type"); 
-        }
-
+        varType = typeNode.get("type"); 
+       
         code += "\n\t.field private " + varName + "." + getType(varType) + ";\n";
     }
 
@@ -129,7 +113,7 @@ public class OllirProducer implements JmmVisitor{
         code+="\t}\n";
     }
 
-    private void generateMainHeader(JmmNode node) { //TODO: make more better function oopsie
+    private void generateMainHeader(JmmNode node) {
         String mainArgs="";
         String mainReturnType="";
 
@@ -161,7 +145,7 @@ public class OllirProducer implements JmmVisitor{
 
             switch (child.getKind()) {
                 case "Statement":
-                    // generateStatement(child);
+                    generateStatement(child);
                     break;
             }
         }
@@ -218,7 +202,7 @@ public class OllirProducer implements JmmVisitor{
             JmmNode child = node.getChildren().get(i);
             switch (child.getKind()) {
                 case "Statement":
-                    // generateStatement(child);
+                    generateStatement(child);
                     break;
                 case "Return":
                     generateReturn(child, node.get("functionName"));
@@ -227,7 +211,93 @@ public class OllirProducer implements JmmVisitor{
         }
     }
 
-    // TODO: private void generateStatement(JmmNode node) {
+    private void generateStatement(JmmNode node) {
+
+        List<String> classFieldsNames = new ArrayList<>();
+        if (classFields != null) {
+            for (Symbol field : classFields) {
+                classFieldsNames.add(field.getName());
+            }
+        }
+
+        List<String> methodParametersNames = new ArrayList<>();
+        if (methodParameters != null) {
+            for (Symbol param : methodParameters) {
+                methodParametersNames.add(param.getName());
+            }
+        }
+
+        for (int i = 0; i < node.getNumChildren(); i++) {
+            JmmNode child = node.getChildren().get(i);
+            String type = null;
+            if (child.getChildren().get(child.getNumChildren()-1).getKind().equals("VarAssignment")) {
+                JmmNode second = child.getChildren().get(0);
+
+                if (child.getKind().equals("IDstatement")) {
+                    type = getNodeType(child);
+
+                    if (second.getKind().equals("ExpressionTerminal")) {
+                        String t = getNodeType(second);
+
+                        if (classFieldsNames.contains(second.get("ID"))) {
+                            Symbol s = new Symbol(new Type(t.substring(0, t.length() - 2), t.contains("[]")),
+                                    "t" + tempVarNum++);
+
+                            if (t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]")
+                                    || t.equals("boolean")) {
+                                Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
+                                code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
+                                        + " getfield(" + o.getName() + "." + getType(t) + ", " + second.get("ID")
+                                        + "." + getType(t) + ")." + getType(t) + ";\n";
+                            } else {
+                                code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
+                                        + " getfield(this" + ", " + second.get("ID") + "." + getType(t) + ")."
+                                        + getType(t) + ";\n";
+                            }
+                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                            code+=s.getName() + "." + getType(t) + ";\n";
+                        
+                        } else {
+                            
+                            if (methodParametersNames.contains(second.get("ID"))) {
+                                int idx = methodParametersNames.indexOf(second.get("ID")) + 1;
+                                code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
+                                        + getType(type) + " ";
+                                code+="$" + idx + "." + second.get("ID") + "." + getType(t) + ";\n";
+                            } else {
+                                code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
+                                        + getType(type) + " ";
+                                code+=second.get("ID") + "." + getType(t) + ";\n";
+                            }
+                        }
+                    
+                    } else if (second.getChildren().get(second.getNumChildren()-1).getKind().equals("BooleanTrue") || second
+                            .getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanFalse")) {
+                        code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                        String boolT;
+                        if (second.getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanTrue")) {
+                            boolT = "1";
+                        } else {
+                            boolT = "0";
+                        }
+                        code+=boolT + "." + getType(type) + ";\n";
+
+                    } else if (second.getKind().equals("int") || second.getKind().equals("int[]")) {
+                        code += "\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                        code += second.get("value") + "." + getType(type) + ";\n";
+
+                    } else if (second.getKind().equals("New")) {
+                        code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                        code+="new(" + getType(type) + ")." + getType(type) + ";\n";
+                        code+="\t\tinvokespecial(" + child.get("ID") + "." + getType(type) + ", \"<init>\").V\n";
+                    
+                    //TODO: more cases
+                    }
+                }
+            }
+            //TODO: dotMethods + arrays
+        }
+    }
 
     private void generateReturn(JmmNode node, String methodName) {
         String returnType = table.getReturnType(methodName).getName();
@@ -246,21 +316,21 @@ public class OllirProducer implements JmmVisitor{
             }
         }
 
-        if(varKind.equals("IDstatement")|| varKind.equals("VarDeclaration")) {
-            var = returnNode.get("name");
+        if(varKind.equals("IDstatement")|| varKind.equals("VarDeclaration")||varKind.equals("ExpressionTerminal")) {
+            var = returnNode.get("ID");
 
             String t = getNodeType(returnNode);
             
 
-            if(classFieldsNames.contains(returnNode.get("name"))) {
+            if(classFieldsNames.contains(returnNode.get("ID"))) {
                 Symbol s = new Symbol(new Type(t.substring(0, t.length()-2), t.contains("[]")), "t"+tempVarNum++);
 
                 if(t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]") || t.equals("boolean")) {
                     Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
-                    code += "\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(" + o.getName() + "." + getType(t) + ", " + returnNode.get("name") + "." + getType(t) + ")." + getType(t) + ";\n";
+                    code += "\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(" + o.getName() + "." + getType(t) + ", " + returnNode.get("ID") + "." + getType(t) + ")." + getType(t) + ";\n";
                 }
                 else {
-                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(this" + ", " + returnNode.get("name") + "." + getType(t) + ")." + getType(t) + ";\n";
+                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(this" + ", " + returnNode.get("ID") + "." + getType(t) + ")." + getType(t) + ";\n";
                 }
                 var = s.getName();
                 varKind = t;
@@ -273,21 +343,21 @@ public class OllirProducer implements JmmVisitor{
                     }
                 }
 
-                if(methodParametersNames.contains(returnNode.get("name"))) {
-                    int idx = methodParametersNames.indexOf(returnNode.get("name")) + 1;
-                    var = "$" + idx + "." + returnNode.get("name");
+                if(methodParametersNames.contains(returnNode.get("ID"))) {
+                    int idx = methodParametersNames.indexOf(returnNode.get("ID")) + 1;
+                    var = "$" + idx + "." + returnNode.get("ID");
                     varKind = methodParameters.get(idx - 1).getType().getName();
                     if(methodParameters.get(idx - 1).getType().isArray()) {
                         varKind += "[]";
                     }
                 }
                 else {
-                    var = returnNode.get("name");
+                    var = returnNode.get("ID");
                     varKind = t;
                 }
             }
         }
-        //TODO: else if(varKind.equals("TwoPartExpression")) {
+        //TODO: more cases
         
         else {
             var = returnNode.get("ID");
@@ -339,20 +409,20 @@ public class OllirProducer implements JmmVisitor{
         }
 
 
-        if (methodParametersNames.contains(node.get("name"))) {
-            int i = methodParametersNames.indexOf(node.get("name"));
+        if (methodParametersNames.contains(node.get("ID"))) {
+            int i = methodParametersNames.indexOf(node.get("ID"));
             type = methodParameters.get(i).getType().getName();
             if (methodParameters.get(i).getType().isArray()) {
                 type += "[]";
             }
-        } else if (scopeVariablesNames.contains(node.get("name"))) {
-            int i = scopeVariablesNames.indexOf(node.get("name"));
+        } else if (scopeVariablesNames.contains(node.get("ID"))) {
+            int i = scopeVariablesNames.indexOf(node.get("ID"));
             type = scopeVariables.get(i).getType().getName();
             if (scopeVariables.get(i).getType().isArray()) {
                 type += "[]";
             }
         } else {
-            int i = classFieldsNames.indexOf(node.get("name"));
+            int i = classFieldsNames.indexOf(node.get("ID"));
             type = classFields.get(i).getType().getName();
             if (classFields.get(i).getType().isArray()) {
                 type += "[]";
