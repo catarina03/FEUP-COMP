@@ -44,7 +44,7 @@ public class BackendStage implements JasminBackend {
             ollirClass.buildCFGs(); // build the CFG of each method
             ollirClass.outputCFGs(); // output to .dot files the CFGs, one per method
             ollirClass.buildVarTables(); // build the table of variables for each method
-            ollirClass.show(); // print to console main information about the input OLLIR
+        //    ollirClass.show(); // print to console main information about the input OLLIR
 
             // Convert the OLLIR to a String containing the equivalent Jasmin code
             //String jasminCode = ""; // Convert node ...
@@ -58,6 +58,8 @@ public class BackendStage implements JasminBackend {
             for (var method : ollirClass.getMethods()) {
                 generateMethodCode(method);
             }
+
+            System.out.println(jasminCode);
 
             return new JasminResult(ollirResult, jasminCode.toString(), reportList);
 
@@ -243,37 +245,6 @@ public class BackendStage implements JasminBackend {
             case BINARYOPER:
                 var = ((Operand) assignInst.getDest()).getName();
                 operand = localVarList.get(var).toString();
-
-                OperationType opType = ((BinaryOpInstruction) instructRhs).getUnaryOperation().getOpType();
-
-                switch (opType) {
-
-                    case ADD:
-
-                        Element leftOperand = ((BinaryOpInstruction) instructRhs).getLeftOperand();
-                        Element rightOperand = ((BinaryOpInstruction) instructRhs).getRightOperand();
-
-                        identifyOperandType(leftOperand.getType().getTypeOfElement());
-
-                        jasminCode.append("load_");
-                        jasminCode.append(localVarList.get(((Operand) leftOperand).getName()));
-
-                        identifyOperandType(assignInst.getDest().getType().getTypeOfElement());
-
-                        jasminCode.append("add");
-
-                        identifyOperandType(rightOperand.getType().getTypeOfElement());
-
-                        jasminCode.append("load_");
-                        jasminCode.append(localVarList.get(((Operand) rightOperand).getName()));
-
-                        identifyOperandType(assignInst.getDest().getType().getTypeOfElement());
-
-                        jasminCode.append("store_");
-                        jasminCode.append(operand);
-
-                        break;
-                }
 
                 jasminCode.append("\n");
 
