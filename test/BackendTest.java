@@ -17,7 +17,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import pt.up.fe.comp.TestUtils;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp.jmm.ollir.OllirUtils;
 import pt.up.fe.specs.util.SpecsIo;
+
+import java.util.ArrayList;
 
 public class BackendTest {
 /*
@@ -30,5 +34,18 @@ public class BackendTest {
         assertEquals("Hello, World!", output.trim());
     }
 
- */
+    @Test
+    public void testOllir() {
+        var result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm")),
+        null, new ArrayList<>()));
+
+    }
+
+    @Test
+    public void testJasminFromOllir() {
+        var res = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir")),
+                null, new ArrayList<>()));
+
+    }
+
 }
