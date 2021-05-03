@@ -29,7 +29,7 @@ public class BackendStage implements JasminBackend {
 
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
-        ClassUnit ollirClass = ollirResult.getOllirClass();
+        ClassUnit ollirClass = ollirResult.getOllirClass(); 
 
         try {
 
