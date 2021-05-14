@@ -316,7 +316,7 @@ public class OllirProducer implements JmmVisitor{
             }
         }
 
-        if(varKind.equals("IDstatement")|| varKind.equals("VarDeclaration")||varKind.equals("ExpressionTerminal")) {
+        if(varKind.equals("IDstatement")|| varKind.equals("VarDeclaration")) {
             var = returnNode.get("ID");
 
             String t = getNodeType(returnNode);
@@ -357,6 +357,59 @@ public class OllirProducer implements JmmVisitor{
                 }
             }
         }
+        else if(varKind.equals("ExpressionTerminal")){
+            if (returnNode.getOptional("ID").isPresent()){
+                var = returnNode.get("ID");
+
+                String t = getNodeType(returnNode);
+
+
+                if(classFieldsNames.contains(returnNode.get("ID"))) {
+                    Symbol s = new Symbol(new Type(t.substring(0, t.length()-2), t.contains("[]")), "t"+tempVarNum++);
+
+                    if(t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]") || t.equals("boolean")) {
+                        Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
+                        code += "\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(" + o.getName() + "." + getType(t) + ", " + returnNode.get("ID") + "." + getType(t) + ")." + getType(t) + ";\n";
+                    }
+                    else {
+                        code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t) + " getfield(this" + ", " + returnNode.get("ID") + "." + getType(t) + ")." + getType(t) + ";\n";
+                    }
+                    var = s.getName();
+                    varKind = t;
+                }
+                else {
+                    List<String> methodParametersNames = new ArrayList<>();
+                    if (methodParameters != null) {
+                        for (Symbol param : methodParameters) {
+                            methodParametersNames.add(param.getName());
+                        }
+                    }
+
+                    if(methodParametersNames.contains(returnNode.get("ID"))) {
+                        int idx = methodParametersNames.indexOf(returnNode.get("ID")) + 1;
+                        var = "$" + idx + "." + returnNode.get("ID");
+                        varKind = methodParameters.get(idx - 1).getType().getName();
+                        if(methodParameters.get(idx - 1).getType().isArray()) {
+                            varKind += "[]";
+                        }
+                    }
+                    else {
+                        var = returnNode.get("ID");
+                        varKind = t;
+                    }
+                }
+            }
+            else {
+                switch(returnNode.getChildren().get(0).getKind()){
+                    case "Terminal":
+                        generateTerminal(returnNode.getChildren().get(0));
+                        break;
+                }
+
+
+            }
+
+        }
         //TODO: more cases
         
         else {
@@ -364,6 +417,19 @@ public class OllirProducer implements JmmVisitor{
         }
 
         code += "\n\t\tret." + getType(returnType) + " " + var + "." + getType(varKind) + ";\n";
+    }
+
+    private String generateTerminal(JmmNode node){
+        if (node.getNumChildren() > 0){
+            switch (node.getChildren().get(0).getKind()){  //TODO: ESTAMOS A ASSUMIR QUE SO TEM UM FILHO
+                case "BooleanTrue":
+                    return ":=.bool 1.bool;";
+                    break;
+                case "BooleanFalse":
+                    return ":=.bool 0.bool;";
+                    break;
+            }
+        }
     }
 
     private String getType(String type) {
@@ -378,8 +444,6 @@ public class OllirProducer implements JmmVisitor{
                 return "array.i32";
             case "String[]":
                 return "array.String";
-            case "String":
-                return "String";
             default:
                 return type;
         }

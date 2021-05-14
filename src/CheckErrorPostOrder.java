@@ -31,6 +31,7 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
         addVisit("TypeObject", this::dealWithTypeObject);
         addVisit("This", this::dealWithThis);
         addVisit("Condition", this::dealWithCondition);
+        addVisit("Target", this::dealWithTarget);
         //setDefaultVisit(this::checkSemanticErrors);
 
         //getDistantNode("MethodDeclaration");
@@ -431,6 +432,11 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
         return "this";
     }
 
+    private String dealWithTarget(JmmNode node, Analyser analyser){
+       // if (node.ge)
+        return "this";
+    }
+
 
     private java.util.Optional<JmmNode> getDistantNode(JmmNode node, String kind) {
         if(node.getKind().equals(kind)){
@@ -446,6 +452,9 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
         }
     }
 
+
+
+
     private Optional<JmmNode> getUpperSibling(JmmNode node) {
         JmmNode parent = node.getParent();
         for (int i = 1; i < parent.getNumChildren(); i++) {
@@ -457,14 +466,4 @@ public class CheckErrorPostOrder extends PostorderJmmVisitor<Analyser, String> {
     }
 
 
-
-    private String checkSemanticErrors(JmmNode node, Analyser analyser){
-        switch (node.getKind()){
-            case "Plus":
-                break;
-        }
-
-
-        return "";
-    }
 }

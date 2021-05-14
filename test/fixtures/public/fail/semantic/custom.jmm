@@ -5,6 +5,10 @@
 import io;
 
 class T {
+
+    int[] one;
+    Word ola;
+
     public static void main(String[] a) {
       io.println(10);
     }
@@ -26,11 +30,12 @@ class T {
         //io.length
 
         if (true + one) {
-
-
         }
         else { }
 
         return 1;
     }
 }
+
+
+

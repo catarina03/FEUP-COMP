@@ -175,7 +175,7 @@ void Statement() #void: {}
 
 void StatementWithID() #IDstatement : {Token t;}
 {
-   t=<IDENTIFIER>{jjtThis.put("ID", t.image);}   
+   t=<IDENTIFIER> {jjtThis.put("ID", t.image);}
    (  
       ( <EQUALS> Expression() <SEMICOLON> #VarAssignment )
    | 

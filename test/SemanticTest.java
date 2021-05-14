@@ -4,12 +4,15 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class SemanticTest {
+    /*
     @Test
     public void semanticTestArrIndexNotInt() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/arr_index_not_int.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
+
+
 
     @Test
     public void semanticTestArrSizeNotInt() {
@@ -18,13 +21,21 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
+     */
+
+
+//TODO: ESTE FUNCIONA
+    /*
     @Test
     public void semanticTestBadArguments() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/badArguments.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
+     */
 
+
+    /*
     @Test
     public void semanticTestBinopIncomp() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/binop_incomp.jmm");
@@ -32,7 +43,10 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
+     */
 
+    //TODO: ESTES 2 ESTAO BEM
+/*
     @Test
     public void semanticTestFuncNotFound() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm");
@@ -46,7 +60,11 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
+ */
 
+
+
+/*
     @Test
     public void semanticTestVarExpIncomp() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/var_exp_incomp.jmm");
@@ -100,13 +118,16 @@ public class SemanticTest {
 
 
 
-
+/*
     @Test
     public void semanticTestHello() {
         String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+
+ */
+
 
 /*
     @Test
