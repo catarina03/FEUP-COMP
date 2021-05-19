@@ -239,6 +239,9 @@ public class OllirProducer implements JmmVisitor{
                     if (second.getKind().equals("ExpressionTerminal")) {
                         String t = getNodeType(second);
 
+                        //CLASS FIELD
+                        //METHOD PARAMETER
+                        //LOCAL VAR ASSIGNMENT
                         if (classFieldsNames.contains(second.get("ID"))) {
                             Symbol s = new Symbol(new Type(t.substring(0, t.length() - 2), t.contains("[]")),
                                     "t" + tempVarNum++);
@@ -265,6 +268,9 @@ public class OllirProducer implements JmmVisitor{
                                         + getType(type) + " ";
                                 code+="$" + idx + "." + second.get("ID") + "." + getType(t) + ";\n";
                             } else {
+                                if (this.scopeVariables.contains(second.get("ID"))){
+                                    code += generateExpressionTerminal(second);
+                                }
                                 code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
                                         + getType(type) + " ";
                                 code+=second.get("ID") + "." + getType(t) + ";\n";
@@ -424,12 +430,35 @@ public class OllirProducer implements JmmVisitor{
             switch (node.getChildren().get(0).getKind()){  //TODO: ESTAMOS A ASSUMIR QUE SO TEM UM FILHO
                 case "BooleanTrue":
                     return ":=.bool 1.bool;";
-                    break;
+                    //break;
                 case "BooleanFalse":
                     return ":=.bool 0.bool;";
-                    break;
+                  //  break;
             }
         }
+
+        return ""; //TODO: IS THIS CORRECT?
+    }
+
+    private String generateExpressionTerminal(JmmNode node){
+        if (node.getNumChildren() > 0) {
+            JmmNode terminalNode = node.getChildren().get(0);
+            if (terminalNode.getKind().equals("Terminal")){
+                if (terminalNode.getNumChildren() > 0){
+                    JmmNode terminalVarNode = terminalNode.getChildren().get(0);
+                    switch (terminalVarNode.getKind()) {  //TODO: ESTAMOS A ASSUMIR QUE SO TEM UM FILHO
+                        case "BooleanTrue":
+                            return ":=.bool 1.bool;";
+                        //break;
+                        case "BooleanFalse":
+                            return ":=.bool 0.bool;";
+                       // break;
+                    }
+                }
+            }
+        }
+
+        return ""; //TODO: IS THIS CORRECT?
     }
 
     private String getType(String type) {

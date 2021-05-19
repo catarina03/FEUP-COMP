@@ -45,6 +45,9 @@ public class OptimizationStage implements JmmOptimization {
     @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
         // THIS IS JUST FOR CHECKPOINT 3
+        // TODO NAO SEI SE ISTO ESTA CERTO
+
+      //  toOllir(semanticsResult);
         return semanticsResult;
     }
 

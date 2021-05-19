@@ -15,6 +15,7 @@
 import org.junit.Test;
 
 import pt.up.fe.comp.TestUtils;
+import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class OptimizeTest {
@@ -26,4 +27,16 @@ public class OptimizeTest {
     }
 
  */
+
+    @Test
+    public void testCustom() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+
+       // var output = result.run();
+        // assertEquals("Hello, World!", output.trim());
+    }
 }
