@@ -3,8 +3,10 @@ class HelloWorld {
 
 	public static void main(String[] args) {
         boolean b;
+        boolean c;
 
         b = true;
+        b = c;
 		ioPlus.printHelloWorld();
 	}
 }

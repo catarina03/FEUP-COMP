@@ -1,0 +1,27 @@
+import ioPlus;
+class FindMaximum {
+    int[] test_arr;
+
+    public int find_maximum(int[] arr) {
+        int i;
+        int maximum;
+        int value;
+
+        i = 1;
+        maximum = i;
+        while (i < arr.length) {
+            value = 0;
+            if (maximum < value){
+                value = maximum;
+            }
+            else{
+
+            }
+            i = i + 1;
+        }
+
+        return maximum;
+    }
+
+
+}

@@ -30,7 +30,7 @@ public class OptimizeTest {
 
     @Test
     public void testCustom() {
-        String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm");
+        String jmmParser = SpecsIo.getResource("fixtures/public/custom.jmm");
         JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
 
         var result = TestUtils.optimize(semanticsResult, false);

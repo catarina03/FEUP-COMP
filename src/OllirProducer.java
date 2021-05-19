@@ -141,13 +141,21 @@ public class OllirProducer implements JmmVisitor{
 
     public void generateMainBody(JmmNode node) {
         for (int i = 1; i < node.getNumChildren(); i++) {
+            if (node.getChildren().get(i).getKind().equals("MethodBody")){
+                generateMethodBody(node.getChildren().get(i));
+            }
+
+            /*
             JmmNode child = node.getChildren().get(i);
 
             switch (child.getKind()) {
-                case "Statement":
+                //case "VarDeclaration":    //NOT NEEDED
+                case "IDstatement":
                     generateStatement(child);
                     break;
             }
+
+             */
         }
     }
 
@@ -201,7 +209,8 @@ public class OllirProducer implements JmmVisitor{
         for (int i = 0; i < node.getNumChildren(); i++) {
             JmmNode child = node.getChildren().get(i);
             switch (child.getKind()) {
-                case "Statement":
+                //case "VarDeclaration":    //NOT NEEDED
+                case "IDstatement":
                     generateStatement(child);
                     break;
                 case "Return":
@@ -210,6 +219,7 @@ public class OllirProducer implements JmmVisitor{
             }
         }
     }
+
 
     private void generateStatement(JmmNode node) {
 
@@ -227,79 +237,132 @@ public class OllirProducer implements JmmVisitor{
             }
         }
 
+
+        List<String> scopeVariablesNames = new ArrayList<>();
+        if (scopeVariables!= null) {
+            for (Symbol param : scopeVariables) {
+                scopeVariablesNames.add(param.getName());
+            }
+        }
+
         for (int i = 0; i < node.getNumChildren(); i++) {
             JmmNode child = node.getChildren().get(i);
             String type = null;
-            if (child.getChildren().get(child.getNumChildren()-1).getKind().equals("VarAssignment")) {
-                JmmNode second = child.getChildren().get(0);
 
-                if (child.getKind().equals("IDstatement")) {
-                    type = getNodeType(child);
+            if (i < node.getNumChildren()-1 && node.getChildren().get(i+1).getKind().equals("VarAssignment")) {
 
-                    if (second.getKind().equals("ExpressionTerminal")) {
-                        String t = getNodeType(second);
+                if (child.getKind().equals("ExpressionTerminal") && child.getNumChildren() == 0){
+                    type = getNodeType(node);
+                    String t = getNodeType(child);
+                    if (classFieldsNames.contains(child.get("ID"))) {
+                        Symbol s = new Symbol(new Type(t.substring(0, t.length() - 2), t.contains("[]")),
+                                "t" + tempVarNum++);
 
-                        //CLASS FIELD
-                        //METHOD PARAMETER
-                        //LOCAL VAR ASSIGNMENT
-                        if (classFieldsNames.contains(second.get("ID"))) {
-                            Symbol s = new Symbol(new Type(t.substring(0, t.length() - 2), t.contains("[]")),
-                                    "t" + tempVarNum++);
-
-                            if (t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]")
-                                    || t.equals("boolean")) {
-                                Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
-                                code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
-                                        + " getfield(" + o.getName() + "." + getType(t) + ", " + second.get("ID")
-                                        + "." + getType(t) + ")." + getType(t) + ";\n";
-                            } else {
-                                code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
-                                        + " getfield(this" + ", " + second.get("ID") + "." + getType(t) + ")."
-                                        + getType(t) + ";\n";
-                            }
-                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                            code+=s.getName() + "." + getType(t) + ";\n";
-                        
+                        if (t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]")
+                                || t.equals("boolean")) {
+                            Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
+                            code += "\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
+                                    + " getfield(" + o.getName() + "." + getType(t) + ", " + child.get("ID")
+                                    + "." + getType(t) + ")." + getType(t) + ";\n";
                         } else {
-                            
-                            if (methodParametersNames.contains(second.get("ID"))) {
-                                int idx = methodParametersNames.indexOf(second.get("ID")) + 1;
-                                code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
-                                        + getType(type) + " ";
-                                code+="$" + idx + "." + second.get("ID") + "." + getType(t) + ";\n";
-                            } else {
-                                if (this.scopeVariables.contains(second.get("ID"))){
-                                    code += generateExpressionTerminal(second);
-                                }
-                                code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
-                                        + getType(type) + " ";
-                                code+=second.get("ID") + "." + getType(t) + ";\n";
-                            }
+                            code += "\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
+                                    + " getfield(this" + ", " + child.get("ID") + "." + getType(t) + ")."
+                                    + getType(t) + ";\n";
                         }
-                    
-                    } else if (second.getChildren().get(second.getNumChildren()-1).getKind().equals("BooleanTrue") || second
-                            .getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanFalse")) {
-                        code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                        String boolT;
-                        if (second.getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanTrue")) {
-                            boolT = "1";
-                        } else {
-                            boolT = "0";
-                        }
-                        code+=boolT + "." + getType(type) + ";\n";
-
-                    } else if (second.getKind().equals("int") || second.getKind().equals("int[]")) {
                         code += "\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                        code += second.get("value") + "." + getType(type) + ";\n";
-
-                    } else if (second.getKind().equals("New")) {
-                        code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                        code+="new(" + getType(type) + ")." + getType(type) + ";\n";
-                        code+="\t\tinvokespecial(" + child.get("ID") + "." + getType(type) + ", \"<init>\").V\n";
-                    
-                    //TODO: more cases
+                        code += s.getName() + "." + getType(t) + ";\n";
+                    }
+                    else{
+                        if (methodParametersNames.contains(child.get("ID"))) {
+                            int idx = methodParametersNames.indexOf(child.get("ID")) + 1;
+                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
+                                    + getType(type) + " ";
+                            code+="$" + idx + "." + child.get("ID") + "." + getType(t) + ";\n";
+                        } else {
+                            if (scopeVariablesNames.contains(child.get("ID"))){
+                                code += generateExpressionTerminal(child);
+                            }
+                            code+="\t\t" + node.get("ID") + "." + getType(type) + " :=."
+                                    + getType(type) + " ";
+                            code+=child.get("ID") + "." + getType(t) + ";\n";
+                        }
                     }
                 }
+                else{
+
+                    JmmNode second = child.getChildren().get(0);
+
+                    if (child.getKind().equals("IDstatement")) {
+                        type = getNodeType(child);
+
+                        if (second.getKind().equals("ExpressionTerminal")) {
+                            String t = getNodeType(second);
+
+                            //CLASS FIELD
+                            //METHOD PARAMETER
+                            //LOCAL VAR ASSIGNMENT
+                            if (classFieldsNames.contains(second.get("ID"))) {
+                                Symbol s = new Symbol(new Type(t.substring(0, t.length() - 2), t.contains("[]")),
+                                        "t" + tempVarNum++);
+
+                                if (t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]")
+                                        || t.equals("boolean")) {
+                                    Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
+                                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
+                                            + " getfield(" + o.getName() + "." + getType(t) + ", " + second.get("ID")
+                                            + "." + getType(t) + ")." + getType(t) + ";\n";
+                                } else {
+                                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
+                                            + " getfield(this" + ", " + second.get("ID") + "." + getType(t) + ")."
+                                            + getType(t) + ";\n";
+                                }
+                                code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                                code+=s.getName() + "." + getType(t) + ";\n";
+
+                            } else {
+
+                                if (methodParametersNames.contains(second.get("ID"))) {
+                                    int idx = methodParametersNames.indexOf(second.get("ID")) + 1;
+                                    code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
+                                            + getType(type) + " ";
+                                    code+="$" + idx + "." + second.get("ID") + "." + getType(t) + ";\n";
+                                } else {
+                                    if (this.scopeVariables.contains(second.get("ID"))){
+                                        code += generateExpressionTerminal(second);
+                                    }
+                                    code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
+                                            + getType(type) + " ";
+                                    code+=second.get("ID") + "." + getType(t) + ";\n";
+                                }
+                            }
+
+                        } else if (second.getChildren().get(second.getNumChildren()-1).getKind().equals("BooleanTrue") || second
+                                .getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanFalse")) {
+                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                            String boolT;
+                            if (second.getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanTrue")) {
+                                boolT = "1";
+                            } else {
+                                boolT = "0";
+                            }
+                            code+=boolT + "." + getType(type) + ";\n";
+
+                        } else if (second.getKind().equals("int") || second.getKind().equals("int[]")) {
+                            code += "\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                            code += second.get("value") + "." + getType(type) + ";\n";
+
+                        } else if (second.getKind().equals("New")) {
+                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
+                            code+="new(" + getType(type) + ")." + getType(type) + ";\n";
+                            code+="\t\tinvokespecial(" + child.get("ID") + "." + getType(type) + ", \"<init>\").V\n";
+
+                            //TODO: more cases
+                        }
+                    }
+                }
+
+
+
             }
             //TODO: dotMethods + arrays
         }
