@@ -4,9 +4,20 @@ class HelloWorld {
 	public static void main(String[] args) {
         boolean b;
         boolean c;
+        int i;
+        int j;
+        int k;
+        string a;
+        string x;
+        int[] arr;
+        int[] arr2;
 
         b = true;
+        b = false;
         b = c;
+        i = j;
+        a = x;
+        arr = arr2;
 		ioPlus.printHelloWorld();
 	}
 }
