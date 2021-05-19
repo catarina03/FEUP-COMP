@@ -1,5 +1,6 @@
 import ioPlus;
 class HelloWorld {
+    int flag;
 
 	public static void main(String[] args) {
         boolean b;
@@ -12,6 +13,7 @@ class HelloWorld {
         int[] arr;
         int[] arr2;
 
+        this.flag = 1;
         b = true;
         b = false;
         b = c;

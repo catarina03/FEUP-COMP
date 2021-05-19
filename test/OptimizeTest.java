@@ -39,4 +39,16 @@ public class OptimizeTest {
        // var output = result.run();
         // assertEquals("Hello, World!", output.trim());
     }
+
+    @Test
+    public void testFindMaximum() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+
+        // var output = result.run();
+        // assertEquals("Hello, World!", output.trim());
+    }
 }

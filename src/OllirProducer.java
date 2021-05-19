@@ -197,11 +197,11 @@ public class OllirProducer implements JmmVisitor{
     
         Type type = table.getReturnType(methodName);
         String typeS = type.getName();
-        if (type.isArray()) {   //FIXME: its not adding the thingy when its array :((
+        if (type.isArray()) {
             typeS += "[]";
         }
 
-        methodReturnType+="." +typeS;
+        methodReturnType+="." +getType(typeS);
         code+="\n\t.method public " + methodName + "(" + methodArgs + ")" + methodReturnType + " {\n";
     }
 
@@ -289,7 +289,6 @@ public class OllirProducer implements JmmVisitor{
                     }
                 }
                 else{
-
                     JmmNode second = child.getChildren().get(0);
 
                     if (node.getKind().equals("IDstatement")) {

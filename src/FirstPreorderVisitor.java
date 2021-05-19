@@ -91,7 +91,7 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
                         if (node.getChildren().get(i).getKind().equals("ReturnType")){
                             returnTypeName = node.getChildren().get(i).getChildren().get(0).get("type");
 
-                            if(node.getChildren().get(i).getChildren().size() == 2){
+                            if(node.getChildren().get(i).getChildren().size() > 0){
                                 returnTypeIsArray = true;
                             }
                         }
