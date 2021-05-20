@@ -503,15 +503,20 @@ public class OllirProducer implements JmmVisitor{
                 case "BooleanFalse":
                     return ":=.bool 0.bool;";
                 case "New":
-                    String type = node.getChildren().get(0).get("Object");
-                    return ":=."+type+" new("+type+")."+type+";";
+                    if(node.getChildren().get(0).getKind().equals("TypeObject")){
+                        String type = node.getChildren().get(0).get("Object");
+                        return ":=."+type+" new("+type+")."+type+";\n\t\tinvokespecial("+node.getParent()
+                                .getParent().getParent().get("ID")+"."+type+",\"<init>\").V;";
+                    } else if (node.getChildren().get(0).getKind().equals("IntArrayVar")){
+                        String length = node.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("Integer");
+                        //a3.array.array.array.i32 :=.array.array.array.i32 new(array, 5.i32, 4.i32, 3.i32).array.array.array.i32;
+                        return ":=.array.i32 new(array, "+length+".i32).array.i32";
+                    }
             }
+            return ""; // TODO: IS THIS CORRECT?
+        }
 
-
-        return ""; //TODO: IS THIS CORRECT?
-    }
-
-    private String generateExpressionTerminal(JmmNode node){
+        private String generateExpressionTerminal(JmmNode node){
         if (node.getNumChildren() > 0) {
             JmmNode terminalNode = node.getChildren().get(0);
             if (terminalNode.getKind().equals("Terminal")){

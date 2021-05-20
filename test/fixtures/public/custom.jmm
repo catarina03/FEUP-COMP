@@ -4,7 +4,8 @@ class HelloWorld {
     
 	public static void main(String[] args) {
         
-        HelloWorld kk;
+        CoolClass kk;
+        int[] coolNewArray;
         boolean b;
         boolean c;
         int i;
@@ -21,7 +22,8 @@ class HelloWorld {
         i = j;
         a = x;
         arr = arr2;
-        kk = new HelloWorld();
+        kk = new CoolClass();
+        coolNewArray = new int[10];
         ioPlus.printHelloWorld();
 	}
 }
