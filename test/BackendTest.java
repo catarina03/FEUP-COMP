@@ -54,6 +54,13 @@ public class BackendTest {
 
  */
 
+//  @Test
+// public void testHelloWorld() {
+//     var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/custom.jmm"));
+//     TestUtils.noErrors(result.getReports());
 
+//     var output = result.run();
+//     assertEquals("Hello, World!", output.trim());
+// }
 
 }

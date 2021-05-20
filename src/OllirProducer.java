@@ -298,7 +298,7 @@ public class OllirProducer implements JmmVisitor{
                             //String t = getNodeType(second.getChildren().get(0));
 
                             second.getChildren().get(0);
-                            code+="\t\t" + node.get("ID") + "." + getType(type) + " ";
+                            code +="\t\t" + node.get("ID") + "." + getType(type) + " ";
                             code += generateTerminal(second.getChildren().get(0)) + "\n";
 
 /*
@@ -500,10 +500,11 @@ public class OllirProducer implements JmmVisitor{
             switch (node.getKind()){  //TODO: ESTAMOS A ASSUMIR QUE SO TEM UM FILHO
                 case "BooleanTrue":
                     return ":=.bool 1.bool;";
-                    //break;
                 case "BooleanFalse":
                     return ":=.bool 0.bool;";
-                  //  break;
+                case "New":
+                    String type = node.getChildren().get(0).get("Object");
+                    return ":=."+type+" new("+type+")."+type+";";
             }
 
 
@@ -519,10 +520,8 @@ public class OllirProducer implements JmmVisitor{
                     switch (terminalVarNode.getKind()) {  //TODO: ESTAMOS A ASSUMIR QUE SO TEM UM FILHO
                         case "BooleanTrue":
                             return ":=.bool 1.bool;";
-                        //break;
                         case "BooleanFalse":
                             return ":=.bool 0.bool;";
-                       // break;
                     }
                 }
             }

@@ -1,8 +1,10 @@
 import ioPlus;
 class HelloWorld {
     int flag;
-
+    
 	public static void main(String[] args) {
+        
+        HelloWorld kk;
         boolean b;
         boolean c;
         int i;
@@ -13,13 +15,13 @@ class HelloWorld {
         int[] arr;
         int[] arr2;
 
-        this.flag = 1;
         b = true;
         b = false;
         b = c;
         i = j;
         a = x;
         arr = arr2;
-		ioPlus.printHelloWorld();
+        kk = new HelloWorld();
+        ioPlus.printHelloWorld();
 	}
 }
