@@ -15,7 +15,9 @@ class HelloWorld {
         string x;
         int[] arr;
         int[] arr2;
+        int[] a3;
 
+        i = args[2];
         b = true;
         b = false;
         b = c;
@@ -26,5 +28,13 @@ class HelloWorld {
         b=!c;
         coolNewArray = new int[10];
         ioPlus.printHelloWorld();
+	}
+
+	public int testString(int[] test){
+	    int i;
+
+	    i = test[2];
+
+	    return 12;
 	}
 }

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,7 @@ public class OllirProducer implements JmmVisitor{
     public List<Symbol> methodParameters;
     public List<Symbol> classFields;
     public List<Symbol> scopeVariables;
+    public String currentMethodName;
 
     public int tempVarNum = 0;
     public int objectsCount = 0;
@@ -72,6 +74,7 @@ public class OllirProducer implements JmmVisitor{
                     generateMethod(child);
                     break;
                 case "Main":
+                    this.currentMethodName = "main";
                     generateMain(child);
                     break;
             }
@@ -164,6 +167,7 @@ public class OllirProducer implements JmmVisitor{
         if (table.getLocalVariables(node.get("functionName")) != null) {
             this.scopeVariables = table.getLocalVariables(node.get("functionName"));
         }
+        this.currentMethodName=node.get("functionName");
 
         generateMethodHeader(node);
         generateMethodBody(node);
@@ -271,6 +275,8 @@ public class OllirProducer implements JmmVisitor{
                         }
                         code += "\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
                         code += s.getName() + "." + getType(t) + ";\n";
+
+                        //TODO ARRAY ACCESS IN CLASS FIELD
                     }
                     else{
                         if (methodParametersNames.contains(child.get("ID"))) {
@@ -278,6 +284,9 @@ public class OllirProducer implements JmmVisitor{
                             code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
                                     + getType(type) + " ";
                             code+="$" + idx + "." + child.get("ID") + "." + getType(t) + ";\n";
+
+                            //TODO ARRAY ACCESS IN METHOD ARG
+
                         } else {
                             if (scopeVariablesNames.contains(child.get("ID"))){
                                 code += generateExpressionTerminal(child);
@@ -285,86 +294,26 @@ public class OllirProducer implements JmmVisitor{
                             code+="\t\t" + node.get("ID") + "." + getType(type) + " :=."
                                     + getType(type) + " ";
                             code+=child.get("ID") + "." + getType(t) + ";\n";
+
+
                         }
                     }
                 }
                 else{
                     JmmNode second = child.getChildren().get(0);
+                    type = getNodeType(node);
 
-                    if (node.getKind().equals("IDstatement")) {
-                        type = getNodeType(node);
 
-                        if (child.getKind().equals("ExpressionTerminal")) {
-                            //String t = getNodeType(second.getChildren().get(0));
+                    if (child.getKind().equals("ExpressionTerminal")) {
 
-                            second.getChildren().get(0);
-                            code +="\t\t" + node.get("ID") + "." + getType(type) + " ";
-                            code += generateTerminal(second.getChildren().get(0)) + "\n";
+                        second.getChildren().get(0);
+                        code +="\t\t" + node.get("ID") + "." + getType(type) + " ";
+                        code += generateTerminal(second.getChildren().get(0)) + "\n";
 
-/*
-                            //CLASS FIELD
-                            //METHOD PARAMETER
-                            //LOCAL VAR ASSIGNMENT
-                            if (classFieldsNames.contains(second.get("ID"))) {
-                                Symbol s = new Symbol(new Type(t.substring(0, t.length() - 2), t.contains("[]")),
-                                        "t" + tempVarNum++);
 
-                                if (t.equals("int") || t.equals("int[]") || t.equals("String") || t.equals("String[]")
-                                        || t.equals("boolean")) {
-                                    Symbol o = new Symbol(s.getType(), "o" + objectsCount++);
-                                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
-                                            + " getfield(" + o.getName() + "." + getType(t) + ", " + second.get("ID")
-                                            + "." + getType(t) + ")." + getType(t) + ";\n";
-                                } else {
-                                    code+="\t\t" + s.getName() + "." + getType(t) + " :=." + getType(t)
-                                            + " getfield(this" + ", " + second.get("ID") + "." + getType(t) + ")."
-                                            + getType(t) + ";\n";
-                                }
-                                code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                                code+=s.getName() + "." + getType(t) + ";\n";
-
-                            } else {
-
-                                if (methodParametersNames.contains(second.get("ID"))) {
-                                    int idx = methodParametersNames.indexOf(second.get("ID")) + 1;
-                                    code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
-                                            + getType(type) + " ";
-                                    code+="$" + idx + "." + second.get("ID") + "." + getType(t) + ";\n";
-                                } else {
-                                    if (scopeVariablesNames.contains(second.get("ID"))){
-                                        code += generateExpressionTerminal(second);
-                                    }
-                                    code+="\t\t" + child.get("ID") + "." + getType(type) + " :=."
-                                            + getType(type) + " ";
-                                    code+=second.get("ID") + "." + getType(t) + ";\n";
-                                }
-                            }
-
-                        } else if (second.getChildren().get(second.getNumChildren()-1).getKind().equals("BooleanTrue") || second
-                                .getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanFalse")) {
-                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                            String boolT;
-                            if (second.getChildren().get(second.getNumChildren() - 1).getKind().equals("BooleanTrue")) {
-                                boolT = "1";
-                            } else {
-                                boolT = "0";
-                            }
-                            code+=boolT + "." + getType(type) + ";\n";
-
-                        } else if (second.getKind().equals("int") || second.getKind().equals("int[]")) {
-                            code += "\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                            code += second.get("value") + "." + getType(type) + ";\n";
-
-                        } else if (second.getKind().equals("New")) {
-                            code+="\t\t" + child.get("ID") + "." + getType(type) + " :=." + getType(type) + " ";
-                            code+="new(" + getType(type) + ")." + getType(type) + ";\n";
-                            code+="\t\tinvokespecial(" + child.get("ID") + "." + getType(type) + ", \"<init>\").V\n";
-
-                            //TODO: more cases
-
-                            */
-
-                        }
+                    }
+                    else if(child.getKind().equals("ArrayAccess")){
+                        generateArrayAccess(child, methodParametersNames);
                     }
                 }
 
@@ -497,36 +446,106 @@ public class OllirProducer implements JmmVisitor{
 
     private String generateTerminal(JmmNode node){
 
-            switch (node.getKind()){  
-                case "BooleanTrue":
-                    return ":=.bool 1.bool;";
-                case "BooleanFalse":
-                    return ":=.bool 0.bool;";
-                case "New":
-                    if(node.getChildren().get(0).getKind().equals("TypeObject")){
-                        String type = node.getChildren().get(0).get("Object");
-                        return ":=."+type+" new("+type+")."+type+";\n\t\tinvokespecial("+node.getParent()
-                                .getParent().getParent().get("ID")+"."+type+",\"<init>\").V;";
-                    } else if (node.getChildren().get(0).getKind().equals("IntArrayVar")){
-                        String length = node.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("Integer");
-                        return ":=.array.i32 new(array, "+length+".i32).array.i32;";
-                    }
-                case "Not":
-                    if(node.getChildren().get(0).getKind().equals("ExpressionTerminal")){
-                        String child = node.getChildren().get(0).get("ID");
-                        //String child = node.getChildren().get(0).getChildren().get(0).get("ID");
-                        return ":=.bool "+child+".bool !.bool "+child+".bool;\n";
-                    }else if(node.getChildren().get(0).getKind().equals("BooleanFalse")){
-                        return ":=.bool 0.bool !.bool 0.bool;\n";
-                    }else if(node.getChildren().get(0).getKind().equals("BooleanTrue")){
-                        return ":=.bool 1.bool !.bool 1.bool;\n";
+        switch (node.getKind()){
+            case "BooleanTrue":
+                return ":=.bool 1.bool;";
+            case "BooleanFalse":
+                return ":=.bool 0.bool;";
+            case "New":
+                if(node.getChildren().get(0).getKind().equals("TypeObject")){
+                    String type = node.getChildren().get(0).get("Object");
+                    return ":=."+type+" new("+type+")."+type+";\n\t\tinvokespecial("+node.getParent()
+                            .getParent().getParent().get("ID")+"."+type+",\"<init>\").V;";
+                } else if (node.getChildren().get(0).getKind().equals("IntArrayVar")){
+                    String length = node.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("Integer");
+                    return ":=.array.i32 new(array, "+length+".i32).array.i32;";
+                }
+            case "Not":
+                if(node.getChildren().get(0).getKind().equals("ExpressionTerminal")){
+                    String child = node.getChildren().get(0).get("ID");
+                    //String child = node.getChildren().get(0).getChildren().get(0).get("ID");
+                    return ":=.bool "+child+".bool !.bool "+child+".bool;\n";
+                }else if(node.getChildren().get(0).getKind().equals("BooleanFalse")){
+                    return ":=.bool 0.bool !.bool 0.bool;\n";
+                }else if(node.getChildren().get(0).getKind().equals("BooleanTrue")){
+                    return ":=.bool 1.bool !.bool 1.bool;\n";
 
-                    }
+                }
+        }
+        return ""; // TODO: IS THIS CORRECT?
+    }
+
+    private void generateArrayAccess(JmmNode node, List<String> methodParameterNames){
+        JmmNode child = node.getChildren().get(0); //ExpressionTerminal
+
+        String type = getNodeType(node.getParent());
+
+        String index = null;
+        boolean isInt = false;
+        if (child.getOptional("ID").isEmpty()){
+            JmmNode target = child.getChildren().get(0); //Terminal
+
+            if (target.getOptional("Integer").isPresent()){
+                index = target.getOptional("Integer").get();
+                isInt = true;
             }
-            return ""; // TODO: IS THIS CORRECT?
+        }
+        else{
+            index = child.get("ID");
         }
 
-        private String generateExpressionTerminal(JmmNode node){
+
+        //IS STATIC?
+        boolean isStatic = false;
+        if (this.currentMethodName.equals("main")){
+            isStatic = true;
+            methodParameterNames.clear();
+
+            if (mainParameters != null) {
+                for (Symbol param : mainParameters) {
+                    methodParameterNames.add(param.getName());
+                }
+            }
+        }
+
+        String t = "int[]";
+        Symbol s = new Symbol(new Type(t.substring(0, t.length()-2), t.contains("[]")), "t"+tempVarNum++);
+
+        JmmNode accessedVar = getUpperSibling(node).get();
+        String name = accessedVar.get("ID");
+
+        int argNumber = -1234;
+        for (int i = 0; i < methodParameterNames.size(); i++){
+            if (methodParameterNames.get(i).equals(name)){
+                argNumber = i;
+            }
+        }
+        if (!isStatic) argNumber++;
+
+        if(isStatic && argNumber==1){
+          t = "String[]";
+          s = new Symbol(new Type(t.substring(0, t.length()-2), t.contains("[]")), "t"+tempVarNum++);
+        }
+
+        String prefix = "";
+        if (argNumber >= 0){
+            prefix = "$"+argNumber+".";
+        }
+
+        if(isInt){
+            this.tempVarNum++;
+            code+= "\t\t" + "aux"+this.tempVarNum + ".i32 :=.i32 "+ index + ".i32;\n";
+            index = "aux"+this.tempVarNum;   // why are we changing index? meow can you see my screen? yesss
+        }
+        //aux1.i32 :=.i32 0.i32;
+
+        code += "\t\t" + node.getParent().get("ID") + "." + getType(type) + " :=."+getType(s.getType().getName())+" "+prefix+name+"["+index+".i32]."+getType(s.getType().getName())+";\n";
+
+
+       // maximum.i32 :=.i32 $2.arr[t1.i32].i32;
+    }
+
+    private String generateExpressionTerminal(JmmNode node){
         if (node.getNumChildren() > 0) {
             JmmNode terminalNode = node.getChildren().get(0);
             if (terminalNode.getKind().equals("Terminal")){
@@ -606,5 +625,15 @@ public class OllirProducer implements JmmVisitor{
             }
         }
         return type;
+    }
+
+    private Optional<JmmNode> getUpperSibling(JmmNode node) {
+        JmmNode parent = node.getParent();
+        for (int i = 1; i < parent.getNumChildren(); i++) {
+            if (node.toString().equals(parent.getChildren().get(i).toString())){
+                return Optional.of(parent.getChildren().get(i-1));
+            }
+        }
+        return Optional.empty();
     }
 }
