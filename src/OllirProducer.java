@@ -301,16 +301,10 @@ public class OllirProducer implements JmmVisitor{
                 }
                 else{
                     JmmNode second = child.getChildren().get(0);
-                    type = getNodeType(node);
-
 
                     if (child.getKind().equals("ExpressionTerminal")) {
 
-                        second.getChildren().get(0);
-                        code +="\t\t" + node.get("ID") + "." + getType(type) + " ";
-                        code += generateTerminal(second.getChildren().get(0)) + "\n";
-
-
+                        generateTerminal(second.getChildren().get(0));
                     }
                     else if(child.getKind().equals("ArrayAccess")){
                         generateArrayAccess(child, methodParametersNames);
@@ -427,7 +421,13 @@ public class OllirProducer implements JmmVisitor{
             else {
                 switch(returnNode.getChildren().get(0).getKind()){
                     case "Terminal":
-                        generateTerminal(returnNode.getChildren().get(0));
+                        if (returnNode.getChildren().get(0).getNumChildren() == 0){
+                            generateTerminal(returnNode.getChildren().get(0));
+                            return;
+                        }
+                        else{
+                            generateTerminal(returnNode.getChildren().get(0).getChildren().get(0));
+                        }
                         break;
                 }
 
@@ -444,35 +444,69 @@ public class OllirProducer implements JmmVisitor{
         code += "\n\t\tret." + getType(returnType) + " " + var + "." + getType(varKind) + ";\n";
     }
 
-    private String generateTerminal(JmmNode node){
+    private void generateTerminal(JmmNode node){
+        if (node.getKind().equals("Terminal")){
+            //cool🌈💓💗🖤🤎💙💛👉👈🥺 so cuteeeee
+            if(node.getOptional("Integer").isPresent() && node.getParent().getParent().getKind().equals("Return")){
+                //hmm, same problem, we need to bring the left part inside of the function
 
-        switch (node.getKind()){
-            case "BooleanTrue":
-                return ":=.bool 1.bool;";
-            case "BooleanFalse":
-                return ":=.bool 0.bool;";
-            case "New":
-                if(node.getChildren().get(0).getKind().equals("TypeObject")){
-                    String type = node.getChildren().get(0).get("Object");
-                    return ":=."+type+" new("+type+")."+type+";\n\t\tinvokespecial("+node.getParent()
-                            .getParent().getParent().get("ID")+"."+type+",\"<init>\").V;";
-                } else if (node.getChildren().get(0).getKind().equals("IntArrayVar")){
-                    String length = node.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("Integer");
-                    return ":=.array.i32 new(array, "+length+".i32).array.i32;";
-                }
-            case "Not":
-                if(node.getChildren().get(0).getKind().equals("ExpressionTerminal")){
-                    String child = node.getChildren().get(0).get("ID");
-                    //String child = node.getChildren().get(0).getChildren().get(0).get("ID");
-                    return ":=.bool "+child+".bool !.bool "+child+".bool;\n";
-                }else if(node.getChildren().get(0).getKind().equals("BooleanFalse")){
-                    return ":=.bool 0.bool !.bool 0.bool;\n";
-                }else if(node.getChildren().get(0).getKind().equals("BooleanTrue")){
-                    return ":=.bool 1.bool !.bool 1.bool;\n";
+                // terminal, expressions
+                //we can but we still need to deal with terminal with no children
+                //lets go then
+                //i go up verify if terminal has no children
 
-                }
+                String value = node.getOptional("Integer").get();
+
+                this.tempVarNum++;
+                code+= "\t\t" + "aux"+this.tempVarNum + ".i32 :=.i32 "+ value + ".i32;\n";
+                value = "aux"+this.tempVarNum;
+
+                String t = "int";
+                Symbol s = new Symbol(new Type(t.substring(0, t.length()-2), t.contains("[]")), "t"+tempVarNum++);
+
+                code += "\t\tret.i32 " + value+".i32;\n";
+            }
         }
-        return ""; // TODO: IS THIS CORRECT?
+        else{
+            JmmNode ancestor = node.getParent().getParent().getParent();
+
+            if (ancestor.getKind().equals("IDstatement")){
+                String type = getNodeType(ancestor);
+
+                switch (node.getKind()){
+                    case "BooleanTrue":
+                        code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=.bool 1.bool;\n";
+                        break;
+                    case "BooleanFalse":
+                        code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=.bool 0.bool;\n";
+                        break;
+                    case "New":
+                        if(node.getChildren().get(0).getKind().equals("TypeObject")){
+                            String typeObj = node.getChildren().get(0).get("Object");
+                            code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=."+typeObj+" new("+typeObj+")."+typeObj+";\n";
+                            code += "\t\tinvokespecial("+node.getParent().getParent().getParent().get("ID")+"."+typeObj+",\"<init>\").V;\n";
+                        } else if (node.getChildren().get(0).getKind().equals("IntArrayVar")){
+                            String length = node.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("Integer");
+                            code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=.array.i32 new(array, "+length+".i32).array.i32;\n";
+                        }
+                        break;
+                    case "Not":
+                        if(node.getChildren().get(0).getKind().equals("ExpressionTerminal")){
+                            String child = node.getChildren().get(0).get("ID");
+                            //String child = node.getChildren().get(0).getChildren().get(0).get("ID");
+                            code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=.bool "+child+".bool !.bool "+child+".bool;\n";
+                        }else if(node.getChildren().get(0).getKind().equals("BooleanFalse")){
+                            code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=.bool 0.bool !.bool 0.bool;\n";
+                        }else if(node.getChildren().get(0).getKind().equals("BooleanTrue")){
+                            code +="\t\t" + ancestor.get("ID") + "." + getType(type) + " :=.bool 1.bool !.bool 1.bool;\n";
+
+                        }
+                        break;
+                }
+            }
+        }
+
+
     }
 
     private void generateArrayAccess(JmmNode node, List<String> methodParameterNames){
@@ -495,7 +529,6 @@ public class OllirProducer implements JmmVisitor{
         }
 
 
-        //IS STATIC?
         boolean isStatic = false;
         if (this.currentMethodName.equals("main")){
             isStatic = true;
@@ -535,14 +568,10 @@ public class OllirProducer implements JmmVisitor{
         if(isInt){
             this.tempVarNum++;
             code+= "\t\t" + "aux"+this.tempVarNum + ".i32 :=.i32 "+ index + ".i32;\n";
-            index = "aux"+this.tempVarNum;   // why are we changing index? meow can you see my screen? yesss
+            index = "aux"+this.tempVarNum;
         }
-        //aux1.i32 :=.i32 0.i32;
 
         code += "\t\t" + node.getParent().get("ID") + "." + getType(type) + " :=."+getType(s.getType().getName())+" "+prefix+name+"["+index+".i32]."+getType(s.getType().getName())+";\n";
-
-
-       // maximum.i32 :=.i32 $2.arr[t1.i32].i32;
     }
 
     private String generateExpressionTerminal(JmmNode node){
