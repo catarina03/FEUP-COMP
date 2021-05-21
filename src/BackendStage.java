@@ -33,6 +33,7 @@ public class BackendStage implements JasminBackend {
     private StringBuilder jasminCode;
     private List<Report> reportList;
 
+
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
         ClassUnit ollirClass = ollirResult.getOllirClass();
@@ -55,6 +56,17 @@ public class BackendStage implements JasminBackend {
 
             // TODO: OllirClass needs to implements "getMethods()" with returns a List or Set with
             //    the methods present in the program at hand.
+
+            jasminCode.append("\n.class public "+ollirClass.getClassName()+"\n");
+
+            if(ollirClass.getSuperClass()==null)
+            {
+                jasminCode.append(".super java/lang/Object\n");
+            }
+            else {
+                jasminCode.append(".super " + ollirClass.getSuperClass() + "\n");
+            }
+
             for (var method : ollirClass.getMethods()) {
                 generateMethodCode(method);
             }
@@ -97,13 +109,13 @@ public class BackendStage implements JasminBackend {
 
         System.out.printf("\tMETHOD NAME: %s\n", method.getMethodName().toUpperCase());
 
-        jasminCode.append("\n\n.method " + method.getMethodAccessModifier().toString().toLowerCase());
+        jasminCode.append("\n\n.method public");
 
         if (method.isConstructMethod()) {
-            jasminCode.append("<init>");
+            jasminCode.append(" <init>");
         } else {
             if (method.isStaticMethod()) {
-                jasminCode.append("static");
+                jasminCode.append(" static");
             }
 
             if (method.isFinalMethod()) {
@@ -238,7 +250,7 @@ public class BackendStage implements JasminBackend {
                     jasminCode.append(localVarList.get(var));
                 }
 
-                jasminCode.append("\n");
+               // jasminCode.append("\n");
 
                 break;
 
@@ -246,7 +258,7 @@ public class BackendStage implements JasminBackend {
                 var = ((Operand) assignInst.getDest()).getName();
                 operand = localVarList.get(var).toString();
 
-                jasminCode.append("\n");
+              //  jasminCode.append("\n");
 
                 break;
         }
