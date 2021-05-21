@@ -497,7 +497,7 @@ public class OllirProducer implements JmmVisitor{
 
     private String generateTerminal(JmmNode node){
 
-            switch (node.getKind()){  //TODO: ESTAMOS A ASSUMIR QUE SO TEM UM FILHO
+            switch (node.getKind()){  
                 case "BooleanTrue":
                     return ":=.bool 1.bool;";
                 case "BooleanFalse":
@@ -509,8 +509,17 @@ public class OllirProducer implements JmmVisitor{
                                 .getParent().getParent().get("ID")+"."+type+",\"<init>\").V;";
                     } else if (node.getChildren().get(0).getKind().equals("IntArrayVar")){
                         String length = node.getChildren().get(0).getChildren().get(0).getChildren().get(0).get("Integer");
-                        //a3.array.array.array.i32 :=.array.array.array.i32 new(array, 5.i32, 4.i32, 3.i32).array.array.array.i32;
                         return ":=.array.i32 new(array, "+length+".i32).array.i32";
+                    }
+                case "Not":
+                    if(node.getChildren().get(0).getKind().equals("ExpressionTerminal")){
+                        String child = node.getChildren().get(0).getChildren().get(0).get("ID");
+                        return ":=.bool "+child+".bool !.bool "+child+".bool;\n";
+                    }else if(node.getChildren().get(0).getKind().equals("BooleanFalse"))){
+                        return ":=.bool 0.bool !.bool 0.bool;\n";
+                    }else if(node.getChildren().get(0).getKind().equals("BooleanTrue")){
+                        return ":=.bool 1.bool !.bool 1.bool;\n";
+
                     }
             }
             return ""; // TODO: IS THIS CORRECT?

@@ -23,6 +23,7 @@ class HelloWorld {
         a = x;
         arr = arr2;
         kk = new CoolClass();
+        b=!c;
         coolNewArray = new int[10];
         ioPlus.printHelloWorld();
 	}
