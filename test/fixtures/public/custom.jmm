@@ -28,6 +28,8 @@ class HelloWorld {
         b=!c;
         coolNewArray = new int[10];
         ioPlus.printHelloWorld();
+
+        i = j * k - 1 + j + i;
 	}
 
 	public int testString(int[] test){
