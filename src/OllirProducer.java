@@ -241,7 +241,6 @@ public class OllirProducer implements JmmVisitor{
             }
         }
 
-
         List<String> scopeVariablesNames = new ArrayList<>();
         if (scopeVariables!= null) {
             for (Symbol param : scopeVariables) {

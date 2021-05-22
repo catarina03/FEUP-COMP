@@ -240,7 +240,7 @@ void Expression() #void :{}
 
 void ExpressionAND() #void :{}         
 {
-   ( <AND> ExpressionSwitchFromAND() ExpressionAND() #And )
+   ( <AND> ExpressionSwitchFromAND() #And(2) ExpressionAND() )
    | 
    {}
 }
@@ -252,7 +252,7 @@ void ExpressionSwitchFromAND() #void: {}
 
 void ExpressionLESS() #void :{}           
 {
-   ( <LESS> ExpressionSwitchFromLESS() ExpressionLESS() #Less )
+   ( <LESS> ExpressionSwitchFromLESS() #Less(2) ExpressionLESS() )
    | 
    {}
 }
@@ -264,9 +264,9 @@ void ExpressionSwitchFromLESS() #void : {}
 
 void ExpressionPLUSMINUS() #void :{}
 {
-   ( <PLUS> ExpressionSwitchFromPLUSMINUS() ExpressionPLUSMINUS() #Plus )
+   ( <PLUS> ExpressionSwitchFromPLUSMINUS() #Plus(2) ExpressionPLUSMINUS() )
    |
-   ( <MINUS> ExpressionSwitchFromPLUSMINUS() ExpressionPLUSMINUS() #Minus )
+   ( <MINUS> ExpressionSwitchFromPLUSMINUS() #Minus(2) ExpressionPLUSMINUS() )
    |
    {}
 }
@@ -278,9 +278,9 @@ void ExpressionSwitchFromPLUSMINUS() #void :{}
 
 void ExpressionMULDIV() #void :{}
 {
-   ( <MUL> ExpressionSwitchFromMULDIV() ExpressionMULDIV() #Mul )
+   ( <MUL> ExpressionSwitchFromMULDIV() #Mul(2) ExpressionMULDIV() )
    |
-   ( <DIV> ExpressionSwitchFromMULDIV() ExpressionMULDIV() #Div )
+   ( <DIV> ExpressionSwitchFromMULDIV() #Div(2) ExpressionMULDIV() )
    |
    {}
 }
