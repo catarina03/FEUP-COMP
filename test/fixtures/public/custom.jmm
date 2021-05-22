@@ -29,8 +29,9 @@ class HelloWorld {
         coolNewArray = new int[10];
         ioPlus.printHelloWorld();
 
-       i = j * k - k + j + i;
-       i = j-k/i;
+        i = j * k - k + j + i;
+        i = j-k/i;
+        b = false && true;
 	}
 
 	public int testString(int[] test){

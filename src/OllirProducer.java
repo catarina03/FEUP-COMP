@@ -9,9 +9,11 @@ import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmVisitor;
+import pt.up.fe.comp.jmm.report.Report;
 
 public class OllirProducer implements JmmVisitor{
-    public SymbolTable table;
+    public SymbolTableManager table;
+    public List<Report> reports;
     public String code = "";
 
     public List<Symbol> mainParameters;
@@ -24,8 +26,9 @@ public class OllirProducer implements JmmVisitor{
     public int objectsCount = 0;
 
 
-    OllirProducer(SymbolTable table){
+    OllirProducer(SymbolTableManager table, List<Report> reports){
         this.table=table;
+        this.reports = reports;
 
         this.classFields=table.getFields();
     }
@@ -308,6 +311,14 @@ public class OllirProducer implements JmmVisitor{
                     else if(child.getKind().equals("ArrayAccess")){
                         generateArrayAccess(child, methodParametersNames);
                     }
+                    else if (isExpression(child)){
+                        Analyser analyser = new Analyser(table, reports);
+                        ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+                        expressionVisitor.visit(child, analyser);
+                        code += expressionVisitor.code;
+                        //generateExpression(child);
+
+                    }
                 }
 
 
@@ -316,6 +327,35 @@ public class OllirProducer implements JmmVisitor{
             //TODO: dotMethods + arrays
         }
     }
+
+    private boolean isExpression(JmmNode node){
+        switch (node.getKind()){
+            case "And":
+            case "Less":
+            case "Plus":
+            case "Minus":
+            case "Mul":
+            case "Div":
+            case "Not":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /*
+    private void generateExpression(JmmNode node){
+        switch (node.getKind()){
+            case "And":
+                //Checkar se a var direita é var
+                //Checkar se a var esquerda é var
+                //var1.bool &&.bool var2.bool
+            case "Less":
+
+        }
+    }
+
+     */
 
     private void generateReturn(JmmNode node, String methodName) {
         String returnType = table.getReturnType(methodName).getName();

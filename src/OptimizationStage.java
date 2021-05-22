@@ -30,16 +30,13 @@ public class OptimizationStage implements JmmOptimization {
 
         // Convert the AST to a String containing the equivalent OLLIR code
         
-        OllirProducer prod = new OllirProducer(semanticsResult.getSymbolTable());
-        prod.visit(node); // TODO: Convert node ... transformar AST em código ollir (string ollir) 
+        OllirProducer prod = new OllirProducer((SymbolTableManager) semanticsResult.getSymbolTable(), semanticsResult.getReports());
+        prod.visit(node);
         String ollirCode = prod.code;
 
         System.out.println("Ollir code:\n" + ollirCode);
 
-        // TODO: More reports from this stage: should we user out Analyser??
-        List<Report> reports = new ArrayList<>();
-
-        return new OllirResult(semanticsResult, ollirCode, reports);
+        return new OllirResult(semanticsResult, ollirCode, prod.reports);
     }
 
     @Override
