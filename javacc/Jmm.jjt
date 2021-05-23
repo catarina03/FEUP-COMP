@@ -202,7 +202,7 @@ void Condition() #Condition: {}
 
 void IfElse() #If : {}
 {
-   <IF> Condition() Statement() <ELSE> Statement()
+   <IF> Condition() Statement() #Then <ELSE> Statement() #Else
 }
 
 SimpleNode While() #While : {}

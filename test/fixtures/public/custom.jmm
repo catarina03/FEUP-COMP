@@ -22,6 +22,15 @@ class HelloWorld {
         blob=f;
         blob=true;
 
+        f=a<a;
+
+        if(a<a){
+            a=5;
+        }
+        else{
+            a=6;
+        }
+
         return n;
     }
 

@@ -6,7 +6,8 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
     private String aux2;
     private String aux3;
     public String code = "";
-    private int tempVarNum = 0;
+    public String conditionCode="";
+    public int tempVarNum = 0;
 
     public ExpressionVisitor(){
         addVisit("And", this::dealWithAnd);
@@ -14,11 +15,12 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
         addVisit("Terminal", this::dealWithTerminal);
         addVisit("BooleanFalse", this::dealWithFalse);
         addVisit("BooleanTrue", this::dealWithTrue);
+        addVisit("Less",this::dealWithLess);
     }
 
     private String dealWithAnd(JmmNode node, Analyser analyser){
         String left = visit(node.getChildren().get(0));
-        String right = visit(node.getChildren().get(1)); //upper sibling
+        String right = visit(node.getChildren().get(1));
 
         String leftExpression = "";
         if (left.equals("true")){
@@ -46,6 +48,7 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+" :=.bool "+leftExpression+" &&.bool "+rightExpression+";\n";
+        conditionCode += " "+ leftExpression+" &&.bool "+rightExpression + " ";
         return returnVar;
         //code += "\t\t"+leftExpression+" &&.bool "+rightExpression+";\n";
     }
@@ -69,7 +72,19 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
         return "false";
     }
 
+    private String dealWithLess(JmmNode node, Analyser analyser){
+        String left = visit(node.getChildren().get(0));
+        String right = visit(node.getChildren().get(1));
+    
         
+
+        String returnVar = "aux" + tempVarNum;
+        tempVarNum++;
+
+        code += "\t\t" + returnVar + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
+        conditionCode += " "+ left + ".i32 >=.bool " + right + ".i32 ";
+        return returnVar;
+    }
 
 
 }

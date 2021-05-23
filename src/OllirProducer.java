@@ -25,6 +25,8 @@ public class OllirProducer implements JmmVisitor{
     public int tempVarNum = 0;
     public int objectsCount = 0;
 
+    public int ifCounter=0;
+
 
     OllirProducer(SymbolTableManager table, List<Report> reports){
         this.table=table;
@@ -74,9 +76,11 @@ public class OllirProducer implements JmmVisitor{
         for (JmmNode child : children) {
             switch (child.getChildren().get(0).getKind()) { //get methods, if first child of method is returnType its a method, else its main
                 case "ReturnType":
+                    tempVarNum=0;
                     generateMethod(child);
                     break;
                 case "Main":
+                    tempVarNum = 0;
                     this.currentMethodName = "main";
                     generateMain(child);
                     break;
@@ -232,6 +236,9 @@ public class OllirProducer implements JmmVisitor{
                 case "IDstatement":
                     generateStatement(child);
                     break;
+                case "If":
+                    generateIf(child);
+                    break;
                 // case "Return":   //return now goes to generateMethod
                 //     generateReturn(child, node.get("functionName"));
                 //     break;
@@ -352,6 +359,7 @@ public class OllirProducer implements JmmVisitor{
                     else if (isExpression(child)){
                         Analyser analyser = new Analyser(table, reports);
                         ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+                        expressionVisitor.tempVarNum = this.tempVarNum;
                         expressionVisitor.visit(child, analyser);
                         code += expressionVisitor.code;
                         //generateExpression(child);
@@ -659,6 +667,45 @@ public class OllirProducer implements JmmVisitor{
         }
 
         return ""; //TODO: IS THIS CORRECT?
+    }
+
+    private void generateIf(JmmNode node){
+
+        generateCondition(node.getChildren().get(0));
+        // if (i.i32 ==.i32 $2.N.i32) goto Then;
+        // goto endif;
+        // Then:all.bool :=.bool 1.bool;
+        // endif:
+
+        if(node.getChildren().get(1).getKind().equals("Then")){
+            generateIfBody(node.getChildren().get(1));
+            code += "\t\tgoto ENDIF" + ifCounter + ":\n";
+
+        }
+        if(node.getChildren().get(2).getKind().equals("Else")){
+            code += "\t\tELSE"+ifCounter+":\n";
+            generateElseBody(node.getChildren().get(2));
+            code += "\t\tENDIF" + ifCounter + ":\n";
+        }
+    }
+    
+    
+    private void generateCondition(JmmNode node){
+        code += "\t\tIF"+ifCounter+" (";
+        Analyser analyser = new Analyser(table, reports);
+        ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+        expressionVisitor.tempVarNum = this.tempVarNum;
+        expressionVisitor.visit(node.getChildren().get(0), analyser);    
+        code+=expressionVisitor.conditionCode;
+        code += ") goto ELSE" + ifCounter + ";\n";
+    }
+
+    private void generateIfBody(JmmNode node){
+        generateStatement(node.getChildren().get(0));
+    }
+
+    private void generateElseBody(JmmNode node) {
+        generateStatement(node.getChildren().get(0));
     }
 
     private String getType(String type) {
