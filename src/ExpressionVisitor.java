@@ -5,11 +5,12 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
     private String aux1;
     private String aux2;
     private String aux3;
-    public String code;
+    public String code = "";
     private int tempVarNum = 0;
 
     public ExpressionVisitor(){
         addVisit("And", this::dealWithAnd);
+        addVisit("ExpressionTerminal", this::dealWithExpressionTerminal);
         addVisit("Terminal", this::dealWithTerminal);
         addVisit("BooleanFalse", this::dealWithFalse);
         addVisit("BooleanTrue", this::dealWithTrue);
@@ -17,7 +18,7 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
 
     private String dealWithAnd(JmmNode node, Analyser analyser){
         String left = visit(node.getChildren().get(0));
-        String right = visit(node.getChildren().get(1));
+        String right = visit(node.getChildren().get(1)); //upper sibling
 
         String leftExpression = "";
         if (left.equals("true")){
@@ -49,6 +50,13 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
         //code += "\t\t"+leftExpression+" &&.bool "+rightExpression+";\n";
     }
 
+    private String dealWithExpressionTerminal(JmmNode node, Analyser analyser) {
+        if(node.getOptional("ID").isPresent()){
+            return node.get("ID");  //FIXME: isto é para as continhas mas as continhas ainda não estão feitas a 100%
+        }
+        return visit(node.getChildren().get(0));
+    }
+
     private String dealWithTerminal(JmmNode node, Analyser analyser){
         return visit(node.getChildren().get(0));
     }
@@ -60,4 +68,8 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
     private String dealWithFalse(JmmNode node, Analyser analyser){
         return "false";
     }
+
+        
+
+
 }
