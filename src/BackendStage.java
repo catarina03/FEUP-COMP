@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.lang.Math;
 
 import org.specs.comp.ollir.*;
 
@@ -32,6 +33,9 @@ public class BackendStage implements JasminBackend {
 
     private StringBuilder jasminCode;
     private List<Report> reportList;
+    private int locals = 0;
+    private int stack = 0;
+    private int stackMax = 0;
 
 
     @Override
@@ -39,13 +43,12 @@ public class BackendStage implements JasminBackend {
         ClassUnit ollirClass = ollirResult.getOllirClass();
 
         try {
-
             // Example of what you can do with the OLLIR class
             ollirClass.checkMethodLabels(); // check the use of labels in the OLLIR loaded
             ollirClass.buildCFGs(); // build the CFG of each method
             ollirClass.outputCFGs(); // output to .dot files the CFGs, one per method
             ollirClass.buildVarTables(); // build the table of variables for each method
-        //    ollirClass.show(); // print to console main information about the input OLLIR
+            ollirClass.show(); // print to console main information about the input OLLIR
 
             // Convert the OLLIR to a String containing the equivalent Jasmin code
             //String jasminCode = ""; // Convert node ...
@@ -137,7 +140,7 @@ public class BackendStage implements JasminBackend {
         identifyType(method.getReturnType().getTypeOfElement());
 
         if (!method.isConstructMethod()) {
-            jasminCode.append("\n\t\t.limit locals 99\n\t\t.limit stack 99\n");
+            jasminCode.append("\n\t\t.limit locals "+ locals + "\n\t\t.limit stack "+ stack + "\n");
         }
 
         for (var instruct : method.getInstructions()) {
@@ -149,7 +152,6 @@ public class BackendStage implements JasminBackend {
 
     private void paramTypes(Method method, Map<String, Integer> listLocalVar) {
         for (Element param : method.getParams()) {
-
             if (param.isLiteral()) {
                 jasminCode.append("L");
             }
@@ -227,12 +229,16 @@ public class BackendStage implements JasminBackend {
                     identifyOperandType(elemRhs.getType().getTypeOfElement());
 
                     jasminCode.append("const_");
+                    stack++;
+                    stackMax = Math.max(stack, stackMax);
                 } else {
                     operand = localVarList.get(((Operand) elemRhs).getName()).toString();
 
                     identifyOperandType(elemRhs.getType().getTypeOfElement());
 
                     jasminCode.append("load_");
+                    stack++;
+                    stackMax = Math.max(stack, stackMax);
                 }
 
                 jasminCode.append(operand);
@@ -240,6 +246,7 @@ public class BackendStage implements JasminBackend {
                 identifyOperandType(elemRhs.getType().getTypeOfElement());
 
                 jasminCode.append("store_");
+                stack--;
 
                 if (!localVarList.containsKey(var)) {
 
@@ -269,6 +276,8 @@ public class BackendStage implements JasminBackend {
 
             jasminCode.append("\n\taload_0\n\tinvokespecial java/lang/Object.<init>()V;");
         }
+
+        System.out.println(callInstruct.invokationType);
 
         switch (callInstruct.getReturnType().getTypeOfElement()) {
 
