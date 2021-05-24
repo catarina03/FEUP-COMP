@@ -2,6 +2,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.JmmNode;
@@ -33,31 +34,21 @@ public class AnalysisStage implements JmmAnalysis {
             return new JmmSemanticsResult(parserResult, null, Arrays.asList(errorReport));
         }
 
+
+        SymbolTableManager symbolTable = new SymbolTableManager();
+        List<Report> reports = new ArrayList<>();
         JmmNode node = parserResult.getRootNode();
 
-        System.out.println("Dump tree with Visitor where you control tree traversal");
-        ExampleVisitor visitor = new ExampleVisitor("Identifier", "id");
-        System.out.println(visitor.visit(node, ""));
 
-        System.out.println("Dump tree with Visitor that automatically performs preorder tree traversal");
-        var preOrderVisitor = new ExamplePreorderVisitor("Identifier", "id");
-        System.out.println(preOrderVisitor.visit(node, ""));
+        //JmmNode jmmNode = JmmNode.fromJson(jsonTree);
+        FirstPreorderVisitor testVisitor = new FirstPreorderVisitor();
+        testVisitor.visit(node, symbolTable);
 
-        System.out.println(
-                "Create histogram of node kinds with Visitor that automatically performs postorder tree traversal");
-        var postOrderVisitor = new ExamplePostorderVisitor();
-        var kindCount = new HashMap<String, Integer>();
-        postOrderVisitor.visit(node, kindCount);
-        System.out.println("Kinds count: " + kindCount + "\n");
 
-        System.out.println(
-                "Print variables name and line, and their corresponding parent with Visitor that automatically performs preorder tree traversal");
-        var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
-        varPrinter.visit(node, null);
+        Analyser analyser = new Analyser(symbolTable, reports);
 
-        // No Symbol Table being calculated yet
-        return new JmmSemanticsResult(parserResult, null, new ArrayList<>());
 
+        return new JmmSemanticsResult(node, analyser.getSymbolTable(), analyser.getReports());
     }
 
 }

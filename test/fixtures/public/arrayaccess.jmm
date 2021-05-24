@@ -1,0 +1,37 @@
+import ioPlus;
+class HelloWorld {
+    int flag;
+    string s;
+
+	public static void main(String[] args) {
+        CoolClass kk;
+        int[] coolNewArray;
+        boolean b;
+        boolean c;
+        int i;
+        int j;
+        int k;
+        string a;
+        string x;
+        int[] arr;
+        int[] arr2;
+        int[] a3;
+
+        i = args[2];
+        coolNewArray = new int[10];
+
+        ioPlus.printHelloWorld();
+
+        i = j * k - k + j + i;
+        i = j-k/i;
+        b = false && true;
+	}
+
+	public int testString(int[] test){
+	    int i;
+
+	    i = test[2];
+
+	    return 12;
+	}
+}
