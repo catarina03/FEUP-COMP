@@ -210,7 +210,7 @@ SimpleNode While() #While : {}
    <WHILE>
    try {
       <LPAR> { this.parenthesisCounter++; }
-        Expression()
+        Expression() #Condition
       <RPAR> { this.parenthesisCounter--; }
    } catch (ParseException e) {
       this.errorCounter++;

@@ -31,6 +31,10 @@ class HelloWorld {
             a=6;
         }
 
+        while(true){
+            a=7;
+        }
+
         return n;
     }
 
