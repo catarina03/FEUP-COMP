@@ -1,0 +1,30 @@
+import ioPlus;
+class HelloWorld {
+    int classFieldTest;
+
+	public static void main(String[] args) {
+        int a;
+        boolean b;
+        int[] testArray;
+
+        a = 987654321;
+        b = false;
+        testArray = new int[10];
+
+		ioPlus.printHelloWorld(a, 1, true, b, testArray[1]);
+	}
+
+    public int test(int arg1){
+        HelloWorld a;
+        a.test(arg1);
+
+        return 1;
+    }
+
+    public int testField(int arg1){
+        HelloWorld a;
+        a.test(classFieldTest);
+
+        return 1;
+    }
+}

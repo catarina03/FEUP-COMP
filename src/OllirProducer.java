@@ -213,7 +213,7 @@ public class OllirProducer implements JmmVisitor {
             }
         }
 
-        Type type = table.getReturnType(methodName);
+        Type type = table.getReturnType(methodName); //FIXME: im showing arrays where I shouldnt
         String typeS = type.getName();
         if (type.isArray()) {
             typeS += "[]";
@@ -361,11 +361,12 @@ public class OllirProducer implements JmmVisitor {
                         expressionVisitor.tempVarNum = this.tempVarNum;
                         expressionVisitor.visit(child, analyser);
                         code += expressionVisitor.code;
-                        // generateExpression(child);
                     }
                 }
+            }else if(node.getChildren().get(i).getKind().equals("DotMethodCall")){ //dotMethodCall
+                generateDotMethodCall(node.getChildren().get(i), methodParametersNames, classFieldsNames);
             }
-            // TODO: dotMethods + arrays
+            
         }
     }
 
@@ -664,6 +665,96 @@ public class OllirProducer implements JmmVisitor {
         return ""; // TODO: IS THIS CORRECT?
     }
 
+    private void generateDotMethodCall(JmmNode node, List<String> methodParameterNames, List<String> classFieldsNames){
+        //métodos DESTA CLASSE  invokevirtual
+        if(table.getMethods().contains(node.get("DotMethodCall"))){
+            if (node.getNumChildren() == 0) { // sem argumentos
+                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall")
+                        + "\").V;\n";
+            } else {// com argumentos
+                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall") + "\"";
+                for (int i = 0; i < node.getNumChildren(); i++) {
+                    // expression terminal with ID
+                    if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getOptional("ID").isPresent()) {
+                        if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
+                            int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
+                            code += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
+                                    + getType(getNodeType(node.getChildren().get(i)));
+
+                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
+                            code += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                                    + getType(getNodeType(node.getChildren().get(i))) + ")";
+                        } else {
+                            code += ", " + node.getChildren().get(i).get("ID") + "."
+                                    + getType(getNodeType(node.getChildren().get(i)));
+                        }
+                    }
+                    // expression terminal withoug ID and a terminal kid
+                    else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getNumChildren() == 1
+                            && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                            && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                        code += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                    } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getNumChildren() == 1
+                            && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                            && node.getChildren().get(i).getChildren().get(0).getNumChildren() == 1) { // terminal kids
+                                                                                                       // with boolean
+                                                                                                       // kids
+                        if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                .equals("BooleanTrue")) {
+                            code += ", 1.bool";
+                        } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                .equals("BooleanFalse")) {
+                            code += ", 0.bool";
+                        }
+                    }
+                }
+                code += ").V;\n";
+            }
+        
+        }else{ // metodos de OUTRAS CLASSES
+
+            if(node.getNumChildren()==0){  //sem argumentos
+                code += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
+            }else{//com argumentos
+                code += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
+                for(int i=0; i<node.getNumChildren();i++){
+                    //expression terminal with ID
+                    if(node.getChildren().get(i).getKind().equals("ExpressionTerminal") && node.getChildren().get(i).getOptional("ID").isPresent()){
+                        if(methodParameterNames.contains(node.getChildren().get(i).get("ID"))){
+                            int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
+                            code += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
+                                    + getType(getNodeType(node.getChildren().get(i)));
+
+                        }else if(classFieldsNames.contains(node.getChildren().get(i).get("ID"))){
+                            code += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                                    + getType(getNodeType(node.getChildren().get(i)))+")";
+                        }else{
+                            code+=", "+node.getChildren().get(i).get("ID") + "." + getType(getNodeType(node.getChildren().get(i)));
+                        }
+                    }
+                    //expression terminal withoug ID and a terminal kid
+                    else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal") && 
+                            node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                        code += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                    }else if(node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                            && node.getChildren().get(i).getChildren().get(0).getNumChildren()==1){  //terminal kids with boolean kids
+                        if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")){
+                            code += ", 1.bool";
+                        }else if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")){
+                            code += ", 0.bool";
+                        }
+                    }
+                }
+                code+=").V;\n";
+            }
+        }
+    }
+
     private void generateIf(JmmNode node) {
 
         generateIfCondition(node.getChildren().get(0));
@@ -699,13 +790,17 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateIfBody(JmmNode node) {
-        code += "\t";
-        generateStatement(node.getChildren().get(0));
+        for(int i=0;i<node.getNumChildren();i++){
+            code += "\t";
+            generateStatement(node.getChildren().get(i));
+        }
     }
 
     private void generateElseBody(JmmNode node) {
-        code += "\t";
-        generateStatement(node.getChildren().get(0));
+        for (int i = 0; i < node.getNumChildren(); i++){
+            code += "\t";
+            generateStatement(node.getChildren().get(i));
+        }
     }
 
     private void generateWhile(JmmNode node){
@@ -713,7 +808,7 @@ public class OllirProducer implements JmmVisitor {
         generateWhileCondition(node.getChildren().get(0));
 
         code += "\t\tBody"+whileCounter+":\n";
-        generateWhileBody(node.getChildren().get(1));
+        generateWhileBody(node);
         code += "\t\tEndLoop"+whileCounter+":\n";
     }
 
@@ -729,8 +824,10 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateWhileBody(JmmNode node) {
-        code += "\t";
-        generateStatement(node);
+        for (int i = 1; i < node.getNumChildren(); i++){
+            code += "\t";
+            generateStatement(node.getChildren().get(i));
+        }
         code += "\t\tgoto Loop"+whileCounter+";\n";
     }
 

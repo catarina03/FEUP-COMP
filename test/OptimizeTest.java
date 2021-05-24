@@ -19,14 +19,26 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class OptimizeTest {
-/*
+
     @Test
     public void testHelloWorld() {
-        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
     }
 
- */
+    @Test
+    public void testHelloWorldArguments() {
+
+        String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorldArguments.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testCustom() {
@@ -36,7 +48,7 @@ public class OptimizeTest {
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
 
-       // var output = result.run();
+        // var output = result.run();
         // assertEquals("Hello, World!", output.trim());
     }
 
