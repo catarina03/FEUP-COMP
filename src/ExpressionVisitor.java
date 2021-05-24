@@ -47,7 +47,7 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
 
-        code += "\t\t"+returnVar+" :=.bool "+leftExpression+" &&.bool "+rightExpression+";\n";
+        code += "\t\t"+returnVar+".bool :=.bool "+leftExpression+" &&.bool "+rightExpression+";\n";
         conditionCode += " "+ leftExpression+" &&.bool "+rightExpression + " ";
         return returnVar;
         //code += "\t\t"+leftExpression+" &&.bool "+rightExpression+";\n";

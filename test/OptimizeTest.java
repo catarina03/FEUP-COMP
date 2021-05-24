@@ -39,7 +39,44 @@ public class OptimizeTest {
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
     }
+    
+    @Test
+    public void testIf() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/iftest.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
 
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testDotMethods() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/dotmethodstest.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testWhile() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/whiletest.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testArrayAccess() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/arrayaccess.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+/*
     @Test
     public void testCustom() {
         String jmmParser = SpecsIo.getResource("fixtures/public/custom.jmm");
@@ -47,9 +84,6 @@ public class OptimizeTest {
 
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
-
-        // var output = result.run();
-        // assertEquals("Hello, World!", output.trim());
     }
 
     @Test
@@ -59,8 +93,6 @@ public class OptimizeTest {
 
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
-
-        // var output = result.run();
-        // assertEquals("Hello, World!", output.trim());
     }
+    */
 }

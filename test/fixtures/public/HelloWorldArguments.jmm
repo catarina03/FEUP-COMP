@@ -14,17 +14,21 @@ class HelloWorld {
 		ioPlus.printHelloWorld(a, 1, true, b, testArray[1]);
 	}
 
-    public int test(int arg1){
+/*
+    public boolean test(int arg1){
         HelloWorld a;
         a.test(arg1);
 
-        return 1;
+        return true;
     }
+*/    
 
+/*
     public int testField(int arg1){
         HelloWorld a;
         a.test(classFieldTest);
 
         return 1;
     }
+    */
 }

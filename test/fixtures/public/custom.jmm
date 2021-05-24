@@ -33,7 +33,7 @@ class HelloWorld {
             a=9;
         }
 
-        while(true){
+        while(false && true){
             a=7;
             a=8;
         }

@@ -669,10 +669,10 @@ public class OllirProducer implements JmmVisitor {
         //métodos DESTA CLASSE  invokevirtual
         if(table.getMethods().contains(node.get("DotMethodCall"))){
             if (node.getNumChildren() == 0) { // sem argumentos
-                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall")
+                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
                         + "\").V;\n";
             } else {// com argumentos
-                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall") + "\"";
+                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
                 for (int i = 0; i < node.getNumChildren(); i++) {
                     // expression terminal with ID
                     if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
@@ -767,7 +767,7 @@ public class OllirProducer implements JmmVisitor {
         
         if (node.getChildren().get(2).getKind().equals("Else")) {
             generateElseBody(node.getChildren().get(2));
-            code += "\t\tgoto Endif" + ifCounter + ":\n";
+            code += "\t\tgoto Endif" + ifCounter + ";\n";
 
         }
         if (node.getChildren().get(1).getKind().equals("Then")) {
@@ -779,7 +779,7 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateIfCondition(JmmNode node) {
-        code += "\t\tif" + ifCounter + " (";
+        code += "\t\tif" + "(";
         Analyser analyser = new Analyser(table, reports);
         ExpressionVisitor expressionVisitor = new ExpressionVisitor();
         expressionVisitor.tempVarNum = this.tempVarNum;

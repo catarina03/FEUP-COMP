@@ -1,0 +1,25 @@
+import ioPlus;
+class HelloWorld {
+
+    int flag;
+
+    public int get(){
+        return flag;
+    }
+
+	public static void main(String[] args) {
+        int c;
+        int b;
+        boolean result;
+        HelloWorld a;
+
+        a = new HelloWorld();
+
+        ioPlus.printHelloWorld();
+        // ioPlus.printHelloWorld(flag);
+        // ioPlus.printHelloWorld(args);
+        ioPlus.printHelloWorld(c,b,result);
+
+        a.get();
+	}
+}
