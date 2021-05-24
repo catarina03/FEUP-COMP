@@ -140,6 +140,7 @@ public class BackendStage implements JasminBackend {
         identifyType(method.getReturnType().getTypeOfElement());
 
         if (!method.isConstructMethod()) {
+            locals = listLocalVar.size();
             jasminCode.append("\n\t\t.limit locals "+ locals + "\n\t\t.limit stack "+ stack + "\n");
         }
 
@@ -277,7 +278,7 @@ public class BackendStage implements JasminBackend {
             jasminCode.append("\n\taload_0\n\tinvokespecial java/lang/Object.<init>()V;");
         }
 
-        System.out.println(callInstruct.invokationType);
+        //System.out.println(callInstruct.invokationType);
 
         switch (callInstruct.getReturnType().getTypeOfElement()) {
 

@@ -40,24 +40,9 @@ public class BackendTest {
         null, new ArrayList<>()));
 
     }
-//<<<<<<< Updated upstream
-//=======
-
-
-
-//>>>>>>> Stashed changes
-
-
-    /*@Test
-    public void testJasminFromOllir() {
-        var res = TestUtils.backend(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir"));
-
-//<<<<<<< Updated upstream
-//=======
-    }*/
 
     @Test
-    public void testHelloWorldFromOllir() {
+    public void testJasminFromOllir() {
         var result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir")),
                 null, new ArrayList<>()));
         var output = result.run();
@@ -65,5 +50,4 @@ public class BackendTest {
     }
 
 
-//>>>>>>> Stashed changes
 }
