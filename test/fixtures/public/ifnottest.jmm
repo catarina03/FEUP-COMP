@@ -1,0 +1,21 @@
+import ioPlus;
+class HelloWorld {
+
+	public static void main(String[] args) {
+        boolean a;
+        int b;
+        boolean result;
+
+        a = true;
+
+        result = false;
+		if(!a){
+            result = true;
+        }
+        else{
+            result = false;
+        }
+
+        b = 7;
+	}
+}

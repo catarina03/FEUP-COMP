@@ -24,16 +24,28 @@ import pt.up.fe.specs.util.SpecsIo;
 import java.util.ArrayList;
 
 public class BackendTest {
-/*
+
     @Test
     public void testHelloWorld() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        System.out.println(result.getJasminCode());
+
         TestUtils.noErrors(result.getReports());
+
 
         var output = result.run();
         assertEquals("Hello, World!", output.trim());
     }
 
+    @Test
+    public void testHelloWorldAdd() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorldAdd.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("Hello, World!", output.trim());
+    }
+/*
     @Test
     public void testOllir() {
         var result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm")),

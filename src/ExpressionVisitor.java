@@ -16,6 +16,22 @@ public class ExpressionVisitor extends PostorderJmmVisitor<Analyser, String> {
         addVisit("BooleanFalse", this::dealWithFalse);
         addVisit("BooleanTrue", this::dealWithTrue);
         addVisit("Less",this::dealWithLess);
+        addVisit("Not", this::dealWithNot);
+    }
+
+    private String dealWithNot(JmmNode node, Analyser analyser){
+        String left = visit(node.getChildren().get(0));
+/*
+        String leftExpression = "";
+        if (left.equals("true")){
+            leftExpression = "1.bool";
+        }
+        else if(left.equals("false")){
+            leftExpression = "0.bool";
+        }
+
+ */
+        return "";
     }
 
     private String dealWithAnd(JmmNode node, Analyser analyser){

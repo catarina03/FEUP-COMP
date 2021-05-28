@@ -50,6 +50,15 @@ public class OptimizeTest {
     }
 
     @Test
+    public void testIfNot() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/ifnottest.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
     public void testDotMethods() {
         String jmmParser = SpecsIo.getResource("fixtures/public/dotmethodstest.jmm");
         JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
