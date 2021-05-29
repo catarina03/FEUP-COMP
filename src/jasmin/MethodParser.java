@@ -4,8 +4,6 @@ import org.specs.comp.ollir.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class MethodParser {
@@ -24,9 +22,6 @@ public class MethodParser {
 
     public String generateJasmin() {
         StringBuilder jasminCode = new StringBuilder();
-
-        // System.out.printf("\tMETHOD NAME: %s\n",
-        // method.getMethodName().toUpperCase());
 
         jasminCode.append("\n.method public");
 
@@ -69,18 +64,21 @@ public class MethodParser {
     }
 
     private void generateInstructionsCode() {
-        // StringBuilder jasminCode = new StringBuilder();
         for (var instruct : method.getInstructions()) {
             generateInstructionCode(instruct);
         }
     }
 
     private void generateInstructionCode(Instruction instruct) {
-        // StringBuilder jasminCode = new StringBuilder();
-
         switch (instruct.getInstType()) {
             case CALL:
                 generateCall((CallInstruction) instruct);
+                break;
+            case ASSIGN:
+                generateAssign((AssignInstruction) instruct);
+                break;
+            case GETFIELD:
+                generateGetField((GetFieldInstruction) instruct);
                 break;
             case RETURN:
                 generateReturn((ReturnInstruction) instruct);
@@ -88,8 +86,6 @@ public class MethodParser {
             default:
                 addComment(instruct.getInstType() + " IS MISSING");
         }
-
-        // return jasminCode.toString();
     }
 
     private void generateCall(CallInstruction instruction) {
@@ -103,12 +99,10 @@ public class MethodParser {
             default:
                 addComment("Missing CALL " + instruction.getInvocationType());
         }
-
     }
 
     private void generateInvokeStatic(CallInstruction instruction) {
-
-        this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction.getSecondArg()).getLiteral().replaceAll(
+        this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction. getSecondArg()).getLiteral().replaceAll(
                 "\"", "")+"()"+ TypeUtils
                 .parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
     }
@@ -122,11 +116,10 @@ public class MethodParser {
             this.instructionsCode += "\t\tinvokespecial "+ this.classUnit.getSuperClass() +"()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n"; 
             return; 
         }
-
     }
 
     private void generateReturn(ReturnInstruction instruction){
-        switch (instruction.getElementType()) {
+        switch (instruction.getOperand().getType().getTypeOfElement()) {
             case INT32:
                 loadStack(instruction.getOperand());
                 this.instructionsCode += "\t\tireturn\n";
@@ -135,26 +128,86 @@ public class MethodParser {
                 addComment("Missing RETURN TYPE " + instruction.getElementType());
                 break;
         }
+    }
 
+    private void generateAssign(AssignInstruction instruction){
+        var name= ((Operand) instruction.getDest()).getName();
+        var variable = this.method.getVarTable().get(name);
+
+        switch (instruction.getTypeOfAssign().getTypeOfElement()){
+            case INT32:
+                if(instruction.getRhs().getInstType().equals(InstructionType.NOPER)){
+                    if (((SingleOpInstruction) instruction.getRhs()).getSingleOperand().isLiteral()){
+                        //  if (instruction.getRhs().getInstType().equals())
+                        this.instructionsCode += "\t\ticonst_" + ((LiteralElement) ((SingleOpInstruction) instruction.getRhs()).getSingleOperand()).getLiteral() + "\n";
+                        this.instructionsCode += "\t\tistore_" + variable.getVirtualReg() + "\n";
+                    }
+                    else{
+                        //  this.instructionsCode += "\t\ticonst_"+  (instruction.getRhs()).getSingleOperand().getVirtualReg() + "\n"; instruction.
+                        addComment("MISSING ASSIGNMENT OPERATION FOR NON LITERALS");
+                    }
+                }
+
+
+                break;
+            default:
+                addComment("Missing ASSIGN TYPE " + instruction.getTypeOfAssign().getTypeOfElement());
+        }
+    }
+
+    private void generateGetField(GetFieldInstruction instruction) {
+
+        this.instructionsCode += "\t\tgetfield " + instruction.getFirstOperand() + "/" + instruction.getSecondOperand() + TypeUtils.parseType(instruction.getSecondOperand().getType());
+
+            /*
+        this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction.getSecondArg()).getLiteral().replaceAll(
+                "\"", "")+"()"+ TypeUtils
+                .parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
+
+             */
     }
 
     private void loadStack(Element e) {
         if(e.isLiteral()){
-            var variable = this.method.getVarTable();
-            if()
+            // TODO
         }
         else{
             var name= ((Operand) e).getName();
+            var variable = this.method.getVarTable().get(name);
             if(name.equals("this")){
                 generateAload(0);
             }
-        }
+            else{
+                if(variable.getScope().equals(VarScope.PARAMETER)){
+                    generateAload(variable.getVirtualReg());
 
+                    if (!variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
+                        addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
+                        addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
+                    }
+                }
+
+                if(variable.getScope().equals(VarScope.LOCAL)){
+                    generateIload(variable.getVirtualReg());
+
+                    if (!variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
+                        addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
+                    }
+                }
+            }
+
+
+        }
     }
 
     private void generateAload(int index){
         putStack();
         this.instructionsCode+="\t\taload_"+index+"\n";
+    }
+
+    private void generateIload(int index){
+        putStack();
+        this.instructionsCode+="\t\tiload_"+index+"\n";
     }
 
     private void putStack(){
@@ -172,5 +225,4 @@ public class MethodParser {
         this.method.getParams().forEach(parameter -> parameters.add(TypeUtils.parseType(parameter.getType())));
         return String.join("", parameters);
     }
-
 }

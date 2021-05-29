@@ -1,7 +1,6 @@
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import pt.up.fe.comp.TestUtils;
@@ -9,10 +8,6 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
-import pt.up.fe.comp.jmm.ast.examples.ExamplePostorderVisitor;
-import pt.up.fe.comp.jmm.ast.examples.ExamplePreorderVisitor;
-import pt.up.fe.comp.jmm.ast.examples.ExamplePrintVariables;
-import pt.up.fe.comp.jmm.ast.examples.ExampleVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -41,7 +36,7 @@ public class AnalysisStage implements JmmAnalysis {
 
 
         //JmmNode jmmNode = JmmNode.fromJson(jsonTree);
-        FirstPreorderVisitor testVisitor = new FirstPreorderVisitor();
+        SymbolTableVisitor testVisitor = new SymbolTableVisitor();
         testVisitor.visit(node, symbolTable);
 
 

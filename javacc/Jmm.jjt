@@ -86,10 +86,6 @@ TOKEN:
    |  <DOT: "." >
    |  <NOT: "!" >
    | <IDENTIFIER: ["a"-"z", "A"-"Z", "_", "$"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
-   
- //  |  <IDENTIFIEROBJECT: ["A"-"Z"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
-   //|  <IDENTIFIER: ["a"-"z", "_", "$"](["a"-"z", "A"-"Z", "0"-"9", "_", "$"])* >
-
 }
 
 SimpleNode Program(): {}
@@ -222,7 +218,7 @@ SimpleNode While() #While : {}
       error_skipto(RPAR);
 
       if(this.errorCounter == 10){
-         System.exit(0);
+         throw new RuntimeException("Found 10 errors in while conditions");
       }
    }
    Statement()

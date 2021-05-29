@@ -6,6 +6,13 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class SyntacticalTest {
     @Test
+    public void testFileCustom() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/custom.jmm");
+        JmmParserResult result = TestUtils.parse(jmmParser);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
     public void testFileHello() {
         String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
         JmmParserResult result = TestUtils.parse(jmmParser);

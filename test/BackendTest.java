@@ -57,7 +57,7 @@ public class BackendTest {
 */
 
 
-
+/*
 
     @Test
     public void testJasminFromOllir() {
@@ -66,5 +66,6 @@ public class BackendTest {
         var output = result.run();
         // assertEquals("Hello, World!", output.trim());
     }
+    */
 
 }

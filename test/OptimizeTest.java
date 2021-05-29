@@ -85,7 +85,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-/*
+
     @Test
     public void testCustom() {
         String jmmParser = SpecsIo.getResource("fixtures/public/custom.jmm");
@@ -95,6 +95,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    /*
     @Test
     public void testFindMaximum() {
         String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");

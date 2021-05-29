@@ -104,7 +104,7 @@ public class OllirProducer implements JmmVisitor {
 
         varType = typeNode.get("type");
 
-        code += "\n\t.field private " + varName + "." + getType(varType) + ";\n";
+        code += "\t.field private " + varName + "." + getType(varType) + ";\n";
     }
 
     private void generateConstructor() {

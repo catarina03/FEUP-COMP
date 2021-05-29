@@ -1,12 +1,19 @@
 import ioPlus;
 class HelloWorld {
     int flag;
+    int[] flag2;
     string s;
     boolean blob;
-    
+
+    /*
     public int get(){
         return flag;
     }
+
+    public int[] get2(){
+        return flag2;
+    }
+    */
 
     public int put(int n){
         int a;
@@ -40,6 +47,8 @@ class HelloWorld {
 
         return n;
     }
+
+
 
 	public static void main(String[] args) {
         

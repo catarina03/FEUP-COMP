@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager, Boolean> {
+public class SymbolTableVisitor extends PreorderJmmVisitor<SymbolTableManager, Boolean> {
 
-    public FirstPreorderVisitor() {
+    public SymbolTableVisitor() {
         setDefaultVisit(this::populateSymbolTable);
     }
 
@@ -91,7 +91,7 @@ public class FirstPreorderVisitor extends PreorderJmmVisitor<SymbolTableManager,
                         if (node.getChildren().get(i).getKind().equals("ReturnType")){
                             returnTypeName = node.getChildren().get(i).getChildren().get(0).get("type");
 
-                            if(node.getChildren().get(i).getChildren().size() > 0){
+                            if(node.getChildren().get(i).getChildren().get(0).getChildren().size() > 0){
                                 returnTypeIsArray = true;
                             }
                         }
