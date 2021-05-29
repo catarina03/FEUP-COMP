@@ -54,7 +54,7 @@ public class BackendTest {
     }
 */
 
-/*
+
 
 
     @Test
@@ -62,18 +62,7 @@ public class BackendTest {
         var result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir")),
                 null, new ArrayList<>()));
         var output = result.run();
-        assertEquals("Hello, World!", output.trim());
+        // assertEquals("Hello, World!", output.trim());
     }
-
- */
-
-//  @Test
-// public void testHelloWorld() {
-//     var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/custom.jmm"));
-//     TestUtils.noErrors(result.getReports());
-
-//     var output = result.run();
-//     assertEquals("Hello, World!", output.trim());
-// }
 
 }
