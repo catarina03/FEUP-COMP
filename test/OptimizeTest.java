@@ -49,6 +49,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    /*
     @Test
     public void testIfNot() {
         String jmmParser = SpecsIo.getResource("fixtures/public/ifnottest.jmm");
@@ -57,6 +58,8 @@ public class OptimizeTest {
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
     }
+
+     */
 
     @Test
     public void testDotMethods() {

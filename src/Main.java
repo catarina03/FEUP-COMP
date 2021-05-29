@@ -3,6 +3,8 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.ast.examples.ExampleVisitor;
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 
 import java.util.Arrays;
@@ -108,21 +110,15 @@ public class Main implements JmmParser {
 
 			//Ollir
 			OptimizationStage optimizationStage = new OptimizationStage();
-			optimizationStage.toOllir(analysisStage.semanticAnalysis(result));
-			/*
-			SymbolTableManager symbolTable = new SymbolTableManager();
+			OllirResult ollirResult = optimizationStage.toOllir(analysisStage.semanticAnalysis(result));
 
-			JmmNode jmmNode = JmmNode.fromJson(jsonTree);
-			FirstPreorderVisitor testVisitor = new FirstPreorderVisitor();
-			testVisitor.visit(jmmNode, symbolTable);
+			//Jasmin
+			BackendStage backendStage = new BackendStage();
+			JasminResult jasminResult = backendStage.toJasmin(ollirResult);
+			System.out.println(jasminResult.getJasminCode());
 
-			//ExampleVisitor exampleVisitor = new ExampleVisitor("identifier", "id");
-
-			
-			System.out.println("-- SymbolTable --\n" + symbolTable);
-			//System.out.println(testVisitor.visit(jmmNode));
-
-			 */
+			//Run
+			jasminResult.run();
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);

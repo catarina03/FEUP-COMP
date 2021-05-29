@@ -37,6 +37,7 @@ public class BackendTest {
         assertEquals("Hello, World!", output.trim());
     }
 
+    /*
     @Test
     public void testHelloWorldAdd() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorldAdd.jmm"));
@@ -47,6 +48,8 @@ public class BackendTest {
         var output = result.run();
         assertEquals("Hello, World!", output.trim());
     }
+
+     */
 /*
     @Test
     public void testOllir() {
