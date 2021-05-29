@@ -52,14 +52,9 @@ public class MethodParser {
         // Identifies the type of element returned by the method
         jasminCode.append(TypeUtils.parseType(method.getReturnType()));
 
-        var localVars = this.method.getVarTable().values().stream().filter(var -> var.getScope() != VarScope.FIELD)
+        var localVars = this.method.getVarTable().values().stream().filter(var -> var.getVirtualReg() != -1)
                 .collect(Collectors.toSet());
-        // localVars.forEach(var -> {
-        //     if(var.getVarType() instanceof ClassType){
-        //         System.out.println(((ClassType) var.getVarType()).getName());
-        //     }
-        // });
-        // System.out.println("-----------------------");
+       
         jasminCode.append("\n\t\t.limit locals " + localVars.size() + "\n\t\t.limit stack " + stackMax + "\n");
 
         jasminCode.append(instructionsCode);
@@ -86,6 +81,9 @@ public class MethodParser {
         switch (instruct.getInstType()) {
             case CALL:
                 generateCall((CallInstruction) instruct);
+                break;
+            case RETURN:
+                generateReturn((ReturnInstruction) instruct);
                 break;
             default:
                 addComment(instruct.getInstType() + " IS MISSING");
@@ -127,9 +125,23 @@ public class MethodParser {
 
     }
 
-    private void loadStack(Element e){
-        if(e.isLiteral()){
+    private void generateReturn(ReturnInstruction instruction){
+        switch (instruction.getElementType()) {
+            case INT32:
+                loadStack(instruction.getOperand());
+                this.instructionsCode += "\t\tireturn\n";
+                break;
+            default:
+                addComment("Missing RETURN TYPE " + instruction.getElementType());
+                break;
+        }
 
+    }
+
+    private void loadStack(Element e) {
+        if(e.isLiteral()){
+            var variable = this.method.getVarTable();
+            if()
         }
         else{
             var name= ((Operand) e).getName();

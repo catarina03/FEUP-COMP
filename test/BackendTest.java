@@ -40,6 +40,8 @@ public class BackendTest {
     @Test
     public void testHelloWorldAdd() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorldAdd.jmm"));
+        System.out.println(result.getJasminCode());
+
         TestUtils.noErrors(result.getReports());
 
         var output = result.run();

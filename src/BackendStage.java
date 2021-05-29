@@ -3,6 +3,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import jasmin.MethodParser;
+import jasmin.TypeUtils;
+
 import org.specs.comp.ollir.*;
 
 import pt.up.fe.comp.jmm.jasmin.JasminBackend;
@@ -66,6 +68,11 @@ public class BackendStage implements JasminBackend {
             else {
                 jasminCode.append(".super " + ollirClass.getSuperClass() + "\n");
             }
+
+            //class fields
+            ollirClass.getFields().forEach(field ->{
+                jasminCode.append(TypeUtils.parseField(field));
+            });
 
             for (var method : ollirClass.getMethods()) {
                 MethodParser methodParser = new MethodParser(method, ollirClass);
