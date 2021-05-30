@@ -49,8 +49,18 @@ public class MethodParser {
 
         var localVars = this.method.getVarTable().values().stream().filter(var -> var.getVirtualReg() != -1)
                 .collect(Collectors.toSet());
+
+        System.out.println(localVars.toArray());
+
+        int localVarsCount = localVars.size();
+
+        if(!this.method.isStaticMethod()){
+            if(!this.method.getVarTable().keySet().contains("this")){
+                localVarsCount++;
+            }
+        }
        
-        jasminCode.append("\n\t\t.limit locals " + localVars.size() + "\n\t\t.limit stack " + stackMax + "\n");
+        jasminCode.append("\n\t\t.limit locals " + localVarsCount + "\n\t\t.limit stack " + stackMax + "\n");
 
         jasminCode.append(instructionsCode);
 
