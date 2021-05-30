@@ -213,7 +213,7 @@ public class OllirProducer implements JmmVisitor {
             }
         }
 
-        Type type = table.getReturnType(methodName); //FIXME: im showing arrays where I shouldnt
+        Type type = table.getReturnType(methodName);
         String typeS = type.getName();
         if (type.isArray()) {
             typeS += "[]";

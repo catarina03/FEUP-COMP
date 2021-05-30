@@ -50,16 +50,12 @@ public class MethodParser {
         var localVars = this.method.getVarTable().values().stream().filter(var -> var.getVirtualReg() != -1)
                 .collect(Collectors.toSet());
 
-        System.out.println(localVars.toArray());
-
         int localVarsCount = localVars.size();
-
         if(!this.method.isStaticMethod()){
             if(!this.method.getVarTable().keySet().contains("this")){
                 localVarsCount++;
             }
         }
-       
         jasminCode.append("\n\t\t.limit locals " + localVarsCount + "\n\t\t.limit stack " + stackMax + "\n");
 
         jasminCode.append(instructionsCode);
@@ -89,6 +85,9 @@ public class MethodParser {
                 break;
             case GETFIELD:
                 generateGetField((GetFieldInstruction) instruct);
+                break;
+            case PUTFIELD:
+                generatePutField((PutFieldInstruction) instruct);
                 break;
             case RETURN:
                 generateReturn((ReturnInstruction) instruct);
@@ -153,8 +152,17 @@ public class MethodParser {
                         this.instructionsCode += "\t\tistore_" + variable.getVirtualReg() + "\n";
                     }
                     else{
-                        //  this.instructionsCode += "\t\ticonst_"+  (instruction.getRhs()).getSingleOperand().getVirtualReg() + "\n"; instruction.
-                        addComment("MISSING ASSIGNMENT OPERATION FOR NON LITERALS");
+                        var operandName= ((Operand) ((SingleOpInstruction) instruction.getRhs()).getSingleOperand()).getName();
+                        var operandVariable = this.method.getVarTable().get(operandName);
+
+                        if(operandVariable.getScope().equals(VarScope.LOCAL)){
+                            this.instructionsCode += "\t\tiload_" + operandVariable.getVirtualReg() + "\n";
+                            this.instructionsCode += "\t\tistore_" + variable.getVirtualReg() + "\n";
+                        }
+                        else{
+                            //  this.instructionsCode += "\t\ticonst_"+  (instruction.getRhs()).getSingleOperand().getVirtualReg() + "\n"; instruction.
+                            addComment("MISSING ASSIGNMENT OPERATION FOR NON LITERALS SCOPE " + operandVariable.getScope());
+                        }
                     }
                 }
 
@@ -177,9 +185,26 @@ public class MethodParser {
              */
     }
 
+    private void generatePutField(PutFieldInstruction instruction) {
+        loadStack(instruction.getFirstOperand());
+        loadStack(instruction.getThirdOperand());
+
+        this.instructionsCode += "\t\tputfield " + method.getOllirClass().getClassName() + "/" + ((Operand) instruction.getSecondOperand()).getName() + " " + TypeUtils.parseType(instruction.getSecondOperand().getType()) + "\n";
+
+        popStack(); //Dest variable
+        popStack(); // Operand
+    }
+
     private void loadStack(Element e) {
         if(e.isLiteral()){
-            // TODO
+            var literal = ((LiteralElement) e).getLiteral();
+
+            if(e.getType().getTypeOfElement().equals(ElementType.INT32)){
+                generateIConst(Integer.parseInt(literal));
+            }
+            else{
+                addComment("ICONST EQUIVALENT FOR LITERAL " + e.getType().getTypeOfElement() + " IS MISSING");
+            }
         }
         else{
             var name= ((Operand) e).getName();
@@ -189,18 +214,19 @@ public class MethodParser {
             }
             else{
                 if(variable.getScope().equals(VarScope.PARAMETER)){
-                    generateAload(variable.getVirtualReg());
-
-                    if (!variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
-                        addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
+                    if (variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
+                        generateIload(variable.getVirtualReg());
+                    }
+                    else{
                         addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
                     }
                 }
 
                 if(variable.getScope().equals(VarScope.LOCAL)){
-                    generateIload(variable.getVirtualReg());
-
-                    if (!variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
+                    if (variable.getVarType().getTypeOfElement().equals(ElementType.INT32)) {
+                        generateIload(variable.getVirtualReg());
+                    }
+                    else{
                         addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
                     }
                 }
@@ -220,9 +246,18 @@ public class MethodParser {
         this.instructionsCode+="\t\tiload_"+index+"\n";
     }
 
+    private void generateIConst(int index){
+        putStack();
+        this.instructionsCode += "\t\ticonst_" + index + "\n";
+    }
+
     private void putStack(){
         stack++;
         if(stack>stackMax) stackMax=stack;
+    }
+
+    private void popStack(){
+        stack--;
     }
 
     private void addComment(String comment) {
