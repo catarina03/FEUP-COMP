@@ -773,18 +773,28 @@ public class OllirProducer implements JmmVisitor {
             code += "\t\tEndif" + ifCounter + ":\n";
 
         }
+
+        ifCounter++;
     }
 
     private void generateIfCondition(JmmNode node) {
         code += "\t\tif" + "(";
         //check if condition is a lone boolean, if not send to analyzer
-        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0 ){
-            if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue") || node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")) {
-                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue"))
-                    code += "1.bool &&.bool 1.bool";
-                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse"))
-                    code += "0.bool &&.bool 0.bool";
+        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0 && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") ) {
+            if (node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                        .equals("BooleanTrue")
+                        || node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
+                                .getKind().equals("BooleanFalse")) {
+                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
+                            .getKind().equals("BooleanTrue"))
+                        code += "1.bool &&.bool 1.bool";
+                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
+                            .getKind().equals("BooleanFalse"))
+                        code += "0.bool &&.bool 0.bool";
+                }
             }
+
         }
         else {
             Analyser analyser = new Analyser(table, reports);
@@ -818,12 +828,15 @@ public class OllirProducer implements JmmVisitor {
         code += "\t\tBody"+whileCounter+":\n";
         generateWhileBody(node);
         code += "\t\tEndLoop"+whileCounter+":\n";
+
+        whileCounter++;
     }
 
     private void generateWhileCondition(JmmNode node) {
         code += "\t\tif" + " (";
         //check if condition is a lone boolean, if not send to analyzer
-        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0 ){
+        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0 
+                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not")){
             if(node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Terminal") ){
                 if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue") || node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")) {
                     if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue"))

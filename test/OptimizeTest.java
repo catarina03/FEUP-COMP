@@ -18,7 +18,6 @@ import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.specs.util.SpecsIo;
 
-import static org.junit.Assert.assertEquals;
 
 public class OptimizeTest {
 
