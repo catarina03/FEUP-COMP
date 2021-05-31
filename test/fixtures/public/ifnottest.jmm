@@ -16,6 +16,13 @@ class HelloWorld {
             result = false;
         }
 
+        if(!false){
+            result = true;
+        }
+        else{
+            result = false;
+        }
+
         b = 7;
 	}
 }

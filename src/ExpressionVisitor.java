@@ -78,17 +78,22 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
     private String dealWithNot(JmmNode node, Analyser analyser){
         String left = visit(node.getChildren().get(0), analyser);
-/*
+
         String leftExpression = "";
-        if (left.equals("true")){
+        if (left.equals("true")) {
             leftExpression = "1.bool";
-        }
-        else if(left.equals("false")){
+        } else if (left.equals("false")) {
             leftExpression = "0.bool";
+        } else {
+            leftExpression = left + ".bool";
         }
 
- */
-        return "";
+        String returnVar = "aux" + tempVarNum;
+        tempVarNum++;
+
+        code += "\t\t" + returnVar + ".bool :=.bool "+ leftExpression+ " !.bool " + leftExpression + ";\n";
+        conditionCode += " " + leftExpression + " !.bool " + leftExpression + " ";
+        return returnVar;
     }
 
     private String dealWithAnd(JmmNode node, Analyser analyser){
