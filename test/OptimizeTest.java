@@ -18,6 +18,8 @@ import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.specs.util.SpecsIo;
 
+import static org.junit.Assert.assertEquals;
+
 public class OptimizeTest {
 
     @Test
@@ -173,6 +175,52 @@ public class OptimizeTest {
     @Test
     public void testWhileAndIf() {
         String jmmParser = SpecsIo.getResource("fixtures/public/WhileAndIF.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testField() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/testField.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testAssignField() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/assignField.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+
+    @Test
+    public void testPrintAddResult() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/printAddResult.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testAssignLocalVar() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/assignLocalVar.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testArgument() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/testArgument.jmm");
         JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
 
         var result = TestUtils.optimize(semanticsResult, false);
