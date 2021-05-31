@@ -9,6 +9,12 @@ class HelloWorld {
         a = 5;
         b = 6;
 
+        if(true){
+            a = 6;
+        } else{
+            a = 7;
+        }
+
         result = false;
 		if(a < b){
             result = true;

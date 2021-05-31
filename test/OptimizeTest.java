@@ -33,7 +33,7 @@ public class OptimizeTest {
     @Test
     public void testHelloWorldArguments() {
 
-        String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorldArguments.jmm");
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/testField.jmm");
         JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
 
         var result = TestUtils.optimize(semanticsResult, false);
@@ -49,7 +49,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    /*
+
     @Test
     public void testIfNot() {
         String jmmParser = SpecsIo.getResource("fixtures/public/ifnottest.jmm");
@@ -58,8 +58,6 @@ public class OptimizeTest {
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
     }
-
-     */
 
     @Test
     public void testDotMethods() {
@@ -98,7 +96,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    /*
+
     @Test
     public void testFindMaximum() {
         String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
@@ -107,5 +105,77 @@ public class OptimizeTest {
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
     }
-    */
+
+
+    @Test
+    public void testFindMaximumSimple() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximumSimple.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLazySort() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/Lazysort.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLife() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/Life.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMonteCarloPi() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testQuickSort() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/QuickSort.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testSimple() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/Simple.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testTicTacToe() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/TicTacToe.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testWhileAndIf() {
+        String jmmParser = SpecsIo.getResource("fixtures/public/WhileAndIF.jmm");
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
+
+        var result = TestUtils.optimize(semanticsResult, false);
+        TestUtils.noErrors(result.getReports());
+    }
 }

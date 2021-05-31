@@ -105,26 +105,65 @@ public class MethodParser {
             case invokespecial:
                 generateInvokeSpecial(instruction);
                 break;
+            case NEW:
+                generateNew(instruction);
+                //storeStack(instruction.getFirstArg());
+                break;
             default:
                 addComment("Missing CALL " + instruction.getInvocationType());
         }
     }
 
     private void generateInvokeStatic(CallInstruction instruction) {
+        for (int i = 0; i < instruction.getListOfOperands().size(); i++){
+            loadStack(instruction.getListOfOperands().get(i));
+        }
         this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction. getSecondArg()).getLiteral().replaceAll(
                 "\"", "")+"()"+ TypeUtils
                 .parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
+        for (int i = 0; i < instruction.getListOfOperands().size(); i++){
+            popStack();
+        }
     }
 
     private void generateInvokeSpecial(CallInstruction instruction) {
-        loadStack(instruction.getFirstArg());
+
+        if(((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getClassName()) || ((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getSuperClass()) ){
+            //this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
+            loadStack(this.method.getParam(0));
+        }
+        else{
+            loadStack(instruction.getFirstArg());
+        }
         if(classUnit.getSuperClass()==null){
             this.instructionsCode += "\t\tinvokespecial java/lang/Object/<init>()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
+            /*
+            if(!this.method.isConstructMethod()){
+                storeStack((instruction.getFirstArg()));
+            }
+
+             */
             return;
         }else{
             this.instructionsCode += "\t\tinvokespecial "+ this.classUnit.getSuperClass() +"()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n"; 
             return; 
         }
+    }
+
+    private void generateNew(CallInstruction instruction){
+        //loadStack(instruction.getFirstArg());
+        putStack();
+        if(((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getClassName()) || ((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getSuperClass()) ){
+            this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
+            storeStack(this.method.getParam(0));
+        }
+        else{
+            this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
+            //this.instructionsCode += "\t\tdup\n";
+            //loadStack(instruction.getFirstArg());
+            storeStack(instruction.getFirstArg());
+        }
+
     }
 
     private void generateReturn(ReturnInstruction instruction){
@@ -146,30 +185,39 @@ public class MethodParser {
         switch (instruction.getTypeOfAssign().getTypeOfElement()){
             case INT32:
                 if(instruction.getRhs().getInstType().equals(InstructionType.NOPER)){
+                    loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
+                    /*
                     if (((SingleOpInstruction) instruction.getRhs()).getSingleOperand().isLiteral()){
-                        //  if (instruction.getRhs().getInstType().equals())
-                        this.instructionsCode += "\t\ticonst_" + ((LiteralElement) ((SingleOpInstruction) instruction.getRhs()).getSingleOperand()).getLiteral() + "\n";
-                        this.instructionsCode += "\t\tistore_" + variable.getVirtualReg() + "\n";
+                        //loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
+                        storeStack(instruction.getDest());
                     }
                     else{
-                        var operandName= ((Operand) ((SingleOpInstruction) instruction.getRhs()).getSingleOperand()).getName();
-                        var operandVariable = this.method.getVarTable().get(operandName);
-
-                        if(operandVariable.getScope().equals(VarScope.LOCAL)){
-                            this.instructionsCode += "\t\tiload_" + operandVariable.getVirtualReg() + "\n";
-                            this.instructionsCode += "\t\tistore_" + variable.getVirtualReg() + "\n";
-                        }
-                        else{
-                            //  this.instructionsCode += "\t\ticonst_"+  (instruction.getRhs()).getSingleOperand().getVirtualReg() + "\n"; instruction.
-                            addComment("MISSING ASSIGNMENT OPERATION FOR NON LITERALS SCOPE " + operandVariable.getScope());
-                        }
+                        //loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
+                        storeStack((instruction.getDest()));
                     }
+
+                     */
+                    storeStack((instruction.getDest()));
                 }
-
-
                 break;
+            case OBJECTREF:
+                //loadStack(instruction.getDest());
+                //System.out.println(instruction.getRhs().getInstType());
+
+                switch (instruction.getRhs().getInstType()){
+                    case CALL:
+                        generateCall((CallInstruction) instruction.getRhs());
+                        //storeStack((instruction.getDest()));
+                        break;
+                    default:
+                        addComment("Assignment instruction type " + instruction.getRhs().getInstType() + " is missing");
+                }
+                break;
+
+
             default:
                 addComment("Missing ASSIGN TYPE " + instruction.getTypeOfAssign().getTypeOfElement());
+
         }
     }
 
@@ -192,7 +240,7 @@ public class MethodParser {
         this.instructionsCode += "\t\tputfield " + method.getOllirClass().getClassName() + "/" + ((Operand) instruction.getSecondOperand()).getName() + " " + TypeUtils.parseType(instruction.getSecondOperand().getType()) + "\n";
 
         popStack(); //Dest variable
-        popStack(); // Operand
+        //popStack(); // Operand
     }
 
     private void loadStack(Element e) {
@@ -209,10 +257,11 @@ public class MethodParser {
         else{
             var name= ((Operand) e).getName();
             var variable = this.method.getVarTable().get(name);
-            if(name.equals("this")){
+            if(name.equals("this") ){
                 generateAload(0);
             }
             else{
+                /*
                 if(variable.getScope().equals(VarScope.PARAMETER)){
                     if (variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
                         generateIload(variable.getVirtualReg());
@@ -222,18 +271,62 @@ public class MethodParser {
                     }
                 }
 
-                if(variable.getScope().equals(VarScope.LOCAL)){
-                    if (variable.getVarType().getTypeOfElement().equals(ElementType.INT32)) {
-                        generateIload(variable.getVirtualReg());
+                 */
+
+                if(variable.getScope().equals(VarScope.LOCAL) || variable.getScope().equals(VarScope.PARAMETER)){
+                    switch (variable.getVarType().getTypeOfElement()){
+                        case INT32:
+                        case BOOLEAN:
+                            generateIload(variable.getVirtualReg());
+                            break;
+                        case OBJECTREF:
+                            if(((ClassType) variable.getVarType()).getName().equals(this.method.getOllirClass().getClassName()) || ((ClassType) variable.getVarType()).getName().equals(this.method.getOllirClass().getSuperClass())){
+                                generateAload(0);
+                            }else {
+                                generateAload(variable.getVirtualReg());
+                            }
+                            break;
+                        default:
+                            addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
                     }
-                    else{
-                        addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
-                    }
+
+
                 }
             }
 
 
         }
+    }
+
+    private void storeStack(Element e){
+        var name= ((Operand) e).getName();
+        var variable = this.method.getVarTable().get(name);
+
+        if(variable.getScope().equals(VarScope.LOCAL) || variable.getScope().equals(VarScope.PARAMETER)) {
+            switch (variable.getVarType().getTypeOfElement()){
+                case INT32:
+                    generateIStore(variable.getVirtualReg());
+                    break;
+                case OBJECTREF:
+                case ARRAYREF:
+                    generateAStore(variable.getVirtualReg());
+                    break;
+                default:
+                    addComment("Store stack type " + variable.getVarType().getTypeOfElement() + " is missing");
+            }
+        } else{
+            addComment("Store type " + variable.getScope() + " is missing");
+        }
+    }
+
+    private void generateIStore(int index){
+        popStack();
+        this.instructionsCode += "\t\tistore_" + index + "\n";
+    }
+
+    private void generateAStore(int index){
+        popStack();
+        this.instructionsCode += "\t\tastore_" + index + "\n";
     }
 
     private void generateAload(int index){

@@ -11,24 +11,14 @@ class HelloWorld {
         b = false;
         testArray = new int[10];
 
-		ioPlus.printHelloWorld(a, 1, true, b, testArray[1]);
+		//ioPlus.printHelloWorld(a, 1, true, b, testArray[1]);
+		ioPlus.printResult(a);
 	}
 
-/*
     public boolean test(int arg1){
         HelloWorld a;
         a.test(arg1);
 
         return true;
     }
-*/    
-
-/*
-    public int testField(int arg1){
-        HelloWorld a;
-        a.test(classFieldTest);
-
-        return 1;
-    }
-    */
 }
