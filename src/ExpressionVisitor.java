@@ -124,7 +124,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
     private String dealWithTerminal(JmmNode node, Analyser analyser){
         if(node.getOptional("Integer").isPresent()){
-            return node.get("Integer"); 
+            return node.get("Integer");
         }
         return visit(node.getChildren().get(0), analyser);
       //  return visit(node.getChildren().get(0), analyser);

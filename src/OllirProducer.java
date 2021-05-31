@@ -65,25 +65,30 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateClass(JmmNode classNode) {
-        code += table.getClassName() + "{\n";
+        code += table.getClassName() + (table.getClassExtends() ? " extends " + table.getSuper() : "" ) + " {\n";
 
         generateClassFields(classNode);
         generateConstructor();
 
         List<JmmNode> children = classNode.getChildren();
         for (JmmNode child : children) {
-            switch (child.getChildren().get(0).getKind()) { // get methods, if first child of method is returnType its a
-                                                            // method, else its main
-                case "ReturnType":
-                    tempVarNum = 0;
-                    generateMethod(child);
-                    break;
-                case "Main":
-                    tempVarNum = 0;
-                    this.currentMethodName = "main";
-                    generateMain(child);
-                    break;
+            if(!child.getKind().equals("Extends")){
+                switch (child.getChildren().get(0).getKind()) { // get methods, if first child of method is returnType its a
+                    // method, else its main
+                    case "ReturnType":
+                        tempVarNum = 0;
+                        generateMethod(child);
+                        break;
+                    case "Main":
+                        tempVarNum = 0;
+                        this.currentMethodName = "main";
+                        generateMain(child);
+                        break;
+                    default:
+                        code += "\nClass component " + child.getChildren().get(0).getKind() + " is missing!\n";
+                }
             }
+
         }
         code += "}";
     }

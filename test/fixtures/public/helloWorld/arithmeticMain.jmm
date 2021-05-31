@@ -1,8 +1,9 @@
 import ioPlus;
 class HelloWorld {
-    int a;
+    //int a;
     public static void main(String[] args) {
            int b;
+           int a;
            int result;
 
            a = 5;
