@@ -259,7 +259,23 @@ public class BackendTest {
         //assertEquals("Hello, World!", output.trim());
     }
 
+    @Test
+    public void testArithmeticMain() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorld/arithmeticMain.jmm"));
+        System.out.println(result.getJasminCode());
+
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        //assertEquals("Hello, World!", output.trim());
+    }
+
+
+
+    /**********************/
     /* OLLIR FOLDER TESTS */
+    /**********************/
+
     @Test
     public void testFac() {
         var ollirResult = new OllirResult(SpecsIo.getResource("fixtures/public/ollir/Fac.ollir"));
