@@ -9,7 +9,7 @@ class HelloWorld {
         a = 5;
         b = 6;
 
-        if(true){
+        if(true && false){
             a = 6;
         } else{
             a = 7;

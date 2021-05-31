@@ -59,21 +59,6 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
             default:
                 return "; " + node.getKind() + " IS MISSING\n";
         }
-        /*
-        addVisit("And", this::dealWithAnd);
-        addVisit("ExpressionTerminal", this::dealWithExpressionTerminal);
-        addVisit("Terminal", this::dealWithTerminal);
-        addVisit("BooleanFalse", this::dealWithFalse);
-        addVisit("BooleanTrue", this::dealWithTrue);
-        addVisit("Less",this::dealWithLess);
-        addVisit("Not", this::dealWithNot);
-        addVisit("Plus", this::dealWithPlus);
-        addVisit("Minus", this::dealWithMinus);
-        addVisit("Mul", this::dealWithMul);
-        addVisit("Div", this::dealWithDiv);
-         */
-
-        //return code;
     }
 
     private String dealWithNot(JmmNode node, Analyser analyser){
