@@ -2,8 +2,10 @@
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
+import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.examples.ExampleVisitor;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
+import pt.up.fe.comp.jmm.jasmin.JasminUtils;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 
@@ -34,9 +36,9 @@ public class Main implements JmmParser {
 			// Writing the json tree to a file (generated/jmm.json)
 			try {
 				String jsonTree = root.toJson();
-				Files.deleteIfExists(Paths.get("generated/jmm.json"));
-				Files.createFile(Paths.get("generated/jmm.json"));
-				Files.write(Paths.get("generated/jmm.json"), jsonTree.getBytes());
+				Files.deleteIfExists(Paths.get("generated/Simple.json"));
+				Files.createFile(Paths.get("generated/Simple.json"));
+				Files.write(Paths.get("generated/Simple.json"), jsonTree.getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -63,11 +65,6 @@ public class Main implements JmmParser {
 
     public static void main(String[] args) {
         System.out.println("Executing with args: " + Arrays.toString(args));
-       /* if (args[0].contains("fail")) {
-            throw new RuntimeException("It's supposed to fail");
-        }
-
-        */
 
 		JmmParserResult result;
 		InputStream fileStream = null;
@@ -75,7 +72,6 @@ public class Main implements JmmParser {
 		// Opens file passed in arguments and gets its content
 		try{
 			File file = new File(args[0]);
-			//System.out.println(file.getAbsolutePath());
 			fileStream = new FileInputStream(file);
 		} catch(FileNotFoundException e){
 			System.out.println("Couldn't find file");
@@ -95,30 +91,61 @@ public class Main implements JmmParser {
 
 			String jsonTree = "";
 
-			// Writing the json tree to a file (generated/jmm.json)
+			// Writing the json tree to a file (generated/Simple.json)
 			try {
 				jsonTree = root.toJson();
-				Files.deleteIfExists(Paths.get("generated/jmm.json"));
-				Files.createFile(Paths.get("generated/jmm.json"));
-				Files.write(Paths.get("generated/jmm.json"), jsonTree.getBytes());
+				Files.deleteIfExists(Paths.get("Simple.json"));
+				Files.createFile(Paths.get("Simple.json"));
+				Files.write(Paths.get("Simple.json"), jsonTree.getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
 			AnalysisStage analysisStage = new AnalysisStage();
-			System.out.println("\n\n\n"+analysisStage.semanticAnalysis(result).getReports());
+			JmmSemanticsResult semanticsResult = analysisStage.semanticAnalysis(result);
+			System.out.println("\n\n\n"+ semanticsResult.getReports());
+
+			// Writing the json tree to a file (generated/Simple.json)
+			try {
+				String symbolTableFile = semanticsResult.getSymbolTable().print();
+				Files.deleteIfExists(Paths.get("Simple.symbols.txt"));
+				Files.createFile(Paths.get("Simple.symbols.txt"));
+				Files.write(Paths.get("Simple.symbols.txt"), symbolTableFile.getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 			//Ollir
 			OptimizationStage optimizationStage = new OptimizationStage();
 			OllirResult ollirResult = optimizationStage.toOllir(analysisStage.semanticAnalysis(result));
+
+			try {
+				String ollirCode = ollirResult.getOllirCode();
+				Files.deleteIfExists(Paths.get("Simple.ollir"));
+				Files.createFile(Paths.get("Simple.ollir"));
+				Files.write(Paths.get("Simple.ollir"), ollirCode.getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 			//Jasmin
 			BackendStage backendStage = new BackendStage();
 			JasminResult jasminResult = backendStage.toJasmin(ollirResult);
 			System.out.println(jasminResult.getJasminCode());
 
+			try {
+				String jasmminCode = jasminResult.getJasminCode();
+				Files.deleteIfExists(Paths.get("Simple.j"));
+				Files.createFile(Paths.get("Simple.j"));
+				Files.write(Paths.get("Simple.j"), jasmminCode.getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			//Run
 			jasminResult.run();
+			JasminUtils.assemble(new File("Simple.j"), new File("../comp2021-2e"));
+
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);

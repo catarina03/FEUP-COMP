@@ -22,6 +22,7 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendTest {
 
+    /*
     @Test
     public void testHelloWorld() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
@@ -272,9 +273,9 @@ public class BackendTest {
 
 
 
-    /**********************/
-    /* OLLIR FOLDER TESTS */
-    /**********************/
+    // -------------------------- //
+    // OLLIR FOLDER TESTS  //
+    // ------------------------ //
 
     @Test
     public void testFac() {
@@ -371,4 +372,6 @@ public class BackendTest {
         var output = jasminResult.run();
         //assertEquals("Hello, World!", output.trim());
     }
+
+     */
 }

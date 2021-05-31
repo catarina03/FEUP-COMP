@@ -84,8 +84,6 @@ public class OllirProducer implements JmmVisitor {
                         this.currentMethodName = "main";
                         generateMain(child);
                         break;
-                    default:
-                        code += "\nClass component " + child.getChildren().get(0).getKind() + " is missing!\n";
                 }
             }
 

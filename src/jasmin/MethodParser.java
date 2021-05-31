@@ -248,10 +248,10 @@ public class MethodParser {
             var literal = ((LiteralElement) e).getLiteral();
 
             if(e.getType().getTypeOfElement().equals(ElementType.INT32)){
-                generateIConst(Integer.parseInt(literal));
+                generateIConstant(Integer.parseInt(literal));
             }
             else{
-                addComment("ICONST EQUIVALENT FOR LITERAL " + e.getType().getTypeOfElement() + " IS MISSING");
+                addComment("ICONSTANT EQUIVALENT FOR LITERAL " + e.getType().getTypeOfElement() + " IS MISSING");
             }
         }
         else{
@@ -339,9 +339,20 @@ public class MethodParser {
         this.instructionsCode+="\t\tiload_"+index+"\n";
     }
 
-    private void generateIConst(int index){
+    private void generateIConstant(int literal){
         putStack();
-        this.instructionsCode += "\t\ticonst_" + index + "\n";
+        if (literal >= 0 && literal <= 5){
+            this.instructionsCode += "\t\ticonst_" + literal + "\n";
+        } else if (literal == -1){
+            this.instructionsCode += "\t\ticonst_m1\n";
+        } else if (literal >= -128 && literal <= 127){
+            this.instructionsCode += "\t\tbipush " + literal + "\n";
+        } else if (literal >= -32768 && literal <= 32767){
+            this.instructionsCode += "\t\tsipush " + literal + "\n";
+        } else {
+            this.instructionsCode += "\t\tldc " + literal + "\n";
+        }
+
     }
 
     private void putStack(){

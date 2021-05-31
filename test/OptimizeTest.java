@@ -20,6 +20,7 @@ import pt.up.fe.specs.util.SpecsIo;
 
 
 public class OptimizeTest {
+    /*
 
     @Test
     public void testHelloWorld() {
@@ -225,4 +226,6 @@ public class OptimizeTest {
         var result = TestUtils.optimize(semanticsResult, false);
         TestUtils.noErrors(result.getReports());
     }
+
+    */
 }
