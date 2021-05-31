@@ -22,7 +22,6 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendTest {
 
-    /*
     @Test
     public void testHelloWorld() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
@@ -373,5 +372,4 @@ public class BackendTest {
         //assertEquals("Hello, World!", output.trim());
     }
 
-     */
 }

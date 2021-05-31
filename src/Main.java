@@ -23,40 +23,26 @@ import java.io.FileNotFoundException;
 
 public class Main implements JmmParser {
 
-
 	public JmmParserResult parse(String jmmCode) {
-		
 		try {
 		    Jmm myJmm = new Jmm(new StringReader(jmmCode));
     		SimpleNode root = myJmm.Program(); // returns reference to root node
             	
     		root.dump(""); // prints the tree on the screen
 
-
-			// Writing the json tree to a file (generated/jmm.json)
 			try {
 				String jsonTree = root.toJson();
-				Files.deleteIfExists(Paths.get("generated/Simple.json"));
-				Files.createFile(Paths.get("generated/Simple.json"));
-				Files.write(Paths.get("generated/Simple.json"), jsonTree.getBytes());
+				Files.deleteIfExists(Paths.get("Simple.json"));
+				Files.createFile(Paths.get("Simple.json"));
+				Files.write(Paths.get("Simple.json"), jsonTree.getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-			
-
-			// ORIGINAL
-    		//return new JmmParserResult(root, myJmm.reports);
-
-
-			//MY EXPERIMENT
 			JmmParserResult result;
-
 			result = new JmmParserResult(root, myJmm.reports);
 			System.out.println(result.getReports().toString());
 			return result;
-
-
 
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);
@@ -90,8 +76,6 @@ public class Main implements JmmParser {
 			System.out.println(result.getReports().toString());
 
 			String jsonTree = "";
-
-			// Writing the json tree to a file (generated/Simple.json)
 			try {
 				jsonTree = root.toJson();
 				Files.deleteIfExists(Paths.get("Simple.json"));
@@ -105,7 +89,6 @@ public class Main implements JmmParser {
 			JmmSemanticsResult semanticsResult = analysisStage.semanticAnalysis(result);
 			System.out.println("\n\n\n"+ semanticsResult.getReports());
 
-			// Writing the json tree to a file (generated/Simple.json)
 			try {
 				String symbolTableFile = semanticsResult.getSymbolTable().print();
 				Files.deleteIfExists(Paths.get("Simple.symbols.txt"));
@@ -145,15 +128,11 @@ public class Main implements JmmParser {
 			//Run
 			jasminResult.run();
 			JasminUtils.assemble(new File("Simple.j"), new File("../comp2021-2e"));
-
-
+			
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);
 		}
 
-
-
     }
-
 
 }
