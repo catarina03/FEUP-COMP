@@ -669,27 +669,29 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateDotMethodCall(JmmNode node, List<String> methodParameterNames, List<String> classFieldsNames){
+        String auxCode="";
+        
         //métodos DESTA CLASSE  invokevirtual
         if(table.getMethods().contains(node.get("DotMethodCall"))){
             if (node.getNumChildren() == 0) { // sem argumentos
-                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
+                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
                         + "\").V;\n";
             } else {// com argumentos
-                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
+                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
                 for (int i = 0; i < node.getNumChildren(); i++) {
                     // expression terminal with ID
                     if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
                             && node.getChildren().get(i).getOptional("ID").isPresent()) {
                         if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
                             int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
-                            code += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
                         } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
-                            code += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")";
                         } else {
-                            code += ", " + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                         }
                     }
@@ -698,7 +700,7 @@ public class OllirProducer implements JmmVisitor {
                             && node.getChildren().get(i).getNumChildren() == 1
                             && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
                             && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
-                        code += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
                     } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
                             && node.getChildren().get(i).getNumChildren() == 1
                             && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
@@ -707,22 +709,22 @@ public class OllirProducer implements JmmVisitor {
                                                                                                        // kids
                         if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
                                 .equals("BooleanTrue")) {
-                            code += ", 1.bool";
+                            auxCode += ", 1.bool";
                         } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
                                 .equals("BooleanFalse")) {
-                            code += ", 0.bool";
+                            auxCode += ", 0.bool";
                         }
                     }
                 }
-                code += ").V;\n";
+                auxCode += ").V;\n";
             }
         
         }else{ // metodos de OUTRAS CLASSES
 
             if(node.getNumChildren()==0){  //sem argumentos
-                code += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
+                auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
             }else{//com argumentos
-                code += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
+                auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
                 for(int i=0; i<node.getNumChildren();i++){
                     //expression terminal with ID
                     if(node.getChildren().get(i).getKind().equals("ExpressionTerminal") && node.getChildren().get(i).getOptional("ID").isPresent()){
@@ -731,34 +733,38 @@ public class OllirProducer implements JmmVisitor {
                             if(!node.getChildren().get(i).get("ID").equals("main")){ //Checks if static
                                 index++;
                             }
-                            code += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
                         }else if(classFieldsNames.contains(node.getChildren().get(i).get("ID"))){
-                            code += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)))+")";
+                            code += "\t\taux"+ tempVarNum + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i))) +" :=."+OllirUtils.getType(getNodeType(node.getChildren().get(i)))+" getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."+ OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                            auxCode += ", aux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            tempVarNum++;
                         }else{
-                            code+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            auxCode+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                         }
                     }
                     //expression terminal withoug ID and a terminal kid
                     else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
                             && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal") && 
                             node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
-                        code += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
                     }else if(node.getChildren().get(i).getKind().equals("ExpressionTerminal")
                             && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
                             && node.getChildren().get(i).getChildren().get(0).getNumChildren()==1){  //terminal kids with boolean kids
                         if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")){
-                            code += ", 1.bool";
+                            auxCode += ", 1.bool";
                         }else if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")){
-                            code += ", 0.bool";
+                            auxCode += ", 0.bool";
                         }
                     }
                 }
-                code+=").V;\n";
+                auxCode+=").V;\n";
             }
         }
+        code += auxCode;
     }
 
     private void generateIf(JmmNode node) {
@@ -783,8 +789,9 @@ public class OllirProducer implements JmmVisitor {
     private void generateIfCondition(JmmNode node) {
         code += "\t\tif" + "(";
         //check if condition is a lone boolean, if not send to analyzer
-        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0 && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") ) {
-            if (node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
+        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
+                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") && node
+                        .getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {           // if (node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
                 if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
                         .equals("BooleanTrue")
                         || node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
@@ -796,7 +803,7 @@ public class OllirProducer implements JmmVisitor {
                             .getKind().equals("BooleanFalse"))
                         code += "0.bool &&.bool 0.bool";
                 }
-            }
+            // }
 
         }
         else {
@@ -838,16 +845,22 @@ public class OllirProducer implements JmmVisitor {
     private void generateWhileCondition(JmmNode node) {
         code += "\t\tif" + " (";
         //check if condition is a lone boolean, if not send to analyzer
-        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0 
-                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not")){
-            if(node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Terminal") ){
-                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue") || node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")) {
-                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue"))
+        if (node.getChildren().get(0).getNumChildren() != 0 
+                && node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
+                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") && node
+                        .getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
+            // if (node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")
+                        || node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                                .equals("BooleanFalse")) {
+                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                            .equals("BooleanTrue"))
                         code += "1.bool &&.bool 1.bool";
-                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse"))
+                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                            .equals("BooleanFalse"))
                         code += "0.bool &&.bool 0.bool";
                 }
-            }
+            // }
 
         }
         else {
