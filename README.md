@@ -3,34 +3,72 @@
 ## Evaluation 
 **GROUP: <identifier of the group>**
 
-(Names, numbers, self assessment, and contribution of the members of the group to the project according to:)
-
 | Name | Student number | Grade | Contribution |
 | ---- | -------------- | ----- | ------------ |
-! <name> | <student number> | <0 to 20 value> | <0 to 100 %> |
-! <name> | <student number> | <0 to 20 value> | <0 to 100 %> |
-! <name> | <student number> | <0 to 20 value> | <0 to 100 %> |
-! <name> | <student number> | <0 to 20 value> | <0 to 100 %> |
+| Alexandra Ferreira | 201806784 | 15 | 11% |
+| Catarina Fernandes | 201806610 | 17 | 32% |
+| Flávia Carvalhido | 201806857 | 17 | 32% |
+| Teresa Corado | 201806479 | 16 | 25% |
 
-...
-(Note that the sum of the CONTRIBUTION? values must be 100 %)
-
-GLOBAL Grade of the project: <0 to 20>
+**GLOBAL Grade of the project: 16**
 
 **SUMMARY: (Describe what your tool does and its main features.)**
 
-**DEALING WITH SYNTACTIC ERRORS: (Describe how the syntactic error recovery of your tool works. Does it exit after the first error?)**
+**DEALING WITH SYNTACTIC ERRORS:**
+- Deals with up to 10 errors inside the while condition
+- Generates a report for each of those errors
+- After more than 10 errors throws a RuntimeException
 
-**SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool.)**
+**SEMANTIC ANALYSIS:**
+- verificar se operações são efetuadas com o mesmo tipo (e.g. int + boolean tem de dar erro)
+  - verify if operations are made with operands of the same 
+- não é possível utilizar arrays diretamente para operações aritmeticas (e.g. array1 + array2)
+- verificar se um array access é de facto feito sobre um array (e.g. 1[10] não é permitido)
+- verificar se o indice do array access é um inteiro (e.g. a[true] não é permitido)
+- verificar se valor do assignee é igual ao do assigned (a_int = b_boolean não é permitido!)
+- verificar se operação booleana (&&, < ou !) é efetuada só com booleanos
+- verificar se conditional expressions (if e while) resulta num booleano
+- verificar se o número de argumentos na invocação é igual ao número de parâmetros da declaração
+- verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
 
-**CODE GENERATION: (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)**
+**CODE GENERATION:**  
+OLLIR code is generated from .jmm files, which will be used afterwards to generate the Jasmin code.
+In each situation, the program opts by the most efficient instruction, and the limit of the stack and local variables is generated based on the chosen instructions for each method.  
 
-**TASK DISTRIBUTION: (Identify the set of tasks done by each member of the project. You can divide this by checkpoint it if helps)**
+Our code starts by generating the class structure with a constructor, and then the method stubs with parameters and return types, followed by the method bodies such as variable assignments, arithmetic operations and method invocations.
+Afterwards, it generates the fields of the class and the incrementation of variables.
+
+**TASK DISTRIBUTION:**
+- CHECKPOINT 1 (Everyone did a bit of everything)
+    - grammar 
+    - error treatment and recovery mechanisms for while conditions
+    - generating annotated AST (.jjt file)
+- CHECKPOINT 2:
+    - implementing symbol table interface (Catarina Fernandes)
+    - semantic analysis (Catarina Fernandes, Flávia Carvalhido, Teresa Corado)
+    - ollir (Flávia Carvalhido)
+    - jasmin (Alexandra Ferreira, Teresa Corado)
+- CHECKPOINT 3:
+    - ollir - if/else/loops/arrays (Catarina Fernandes, Flávia Carvalhido)
+    - jasmin (Alexandra Ferreira, Catarina Fernandes, Flávia Carvalhido, Teresa Corado)
+
 
 **PROS: (Identify the most positive aspects of your tool)**
+- LL1 grammar with only 1 local lookahead
+- Generates reports for errors inside the while condtion
+- Only throws a RuntimeException after 10 errors inside the while condition
+  - Semantic analysis
+    
+- Is able to access variables from all scopes
+- Can access other functions in the same class and perform operations inside it
+- Can perform arithmetic and boolean operations
+- Can access libraries and use them in the code (for example: showing output through the ioPlus library)
+- [Optimization] Using instrution types such as bipush, sipush and tldc
 
 **CONS: (Identify the most negative aspects of your tool)**
-
+- Semantic analysis is not fully implemented
+- Ollir cannot deal with array access in expressions and has some problem with dot method calls inside conditions
+- Jasmin code cannot deal with if/else conditions, loops and array access
 
 ## Requirements
 

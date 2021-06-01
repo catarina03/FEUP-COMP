@@ -149,7 +149,7 @@ public class MethodParser {
         for (int i = 0; i < instruction.getListOfOperands().size(); i++){
             popStack();
         }
-        this.instructionsCode += "\t\tpop\n";
+        //this.instructionsCode += "\t\tpop\n";
         popStack();
     }
 
@@ -251,6 +251,9 @@ public class MethodParser {
                     case OBJECTREF:
                         generateCall((CallInstruction) instruction.getRhs());
                         //storeStack(instruction.getDest());
+                        break;
+                    case INT32:
+                        generateCall((CallInstruction) instruction.getRhs());
                         break;
                     default:
                         addComment("ASSIGN TYPE CALL INSTRUCTION TYPE " + instruction.getTypeOfAssign().getTypeOfElement() + " IS MISSING");

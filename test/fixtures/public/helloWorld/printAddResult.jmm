@@ -7,8 +7,8 @@ class HelloWorld {
 
           helloWorld = new HelloWorld();
           result = helloWorld.add(3);
-          result = helloWorld.test();
-          helloWorld.test();
+          //result = helloWorld.test();
+          //helloWorld.test();
           ioPlus.printResult(result);
     }
 
