@@ -5,16 +5,6 @@ class HelloWorld {
     string s;
     boolean blob;
 
-    /*
-    public int get(){
-        return flag;
-    }
-
-    public int[] get2(){
-        return flag2;
-    }
-    */
-
     public int put(int n){
         int a;
         boolean f;
