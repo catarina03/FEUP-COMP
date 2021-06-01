@@ -20,16 +20,15 @@
 - After more than 10 errors throws a RuntimeException
 
 **SEMANTIC ANALYSIS:**
-- verificar se operações são efetuadas com o mesmo tipo (e.g. int + boolean tem de dar erro)
-  - verify if operations are made with operands of the same 
-- não é possível utilizar arrays diretamente para operações aritmeticas (e.g. array1 + array2)
-- verificar se um array access é de facto feito sobre um array (e.g. 1[10] não é permitido)
-- verificar se o indice do array access é um inteiro (e.g. a[true] não é permitido)
-- verificar se valor do assignee é igual ao do assigned (a_int = b_boolean não é permitido!)
-- verificar se operação booleana (&&, < ou !) é efetuada só com booleanos
-- verificar se conditional expressions (if e while) resulta num booleano
-- verificar se o número de argumentos na invocação é igual ao número de parâmetros da declaração
-- verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
+- verify if operations are made with operands of the same type (e.g. int + boolean is not possible)
+- It's not possible to use arrays directly in arithmetic operations (e.g. array1 + array2)
+- Array access has to be done on an array (e.g. 1[10] not allowed) 
+- verify if the assignee value is of the same type of the assigned (a_int = b_boolean is not allowed)
+- Array index has to be an integer (e.g. a[true] not allowed)
+- Boolean operations (&&, < ou !) are only done on boolean variables
+- Conditional expressions have to result in a boolean
+- The number of arguments in the method invocation has to be the same as in the declaration
+- The type of parameters has to be the same as the arguments
 
 **CODE GENERATION:**  
 OLLIR code is generated from .jmm files, which will be used afterwards to generate the Jasmin code.

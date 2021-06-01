@@ -2,15 +2,14 @@
   "kind": "Program",
   "attributes": {
     "col": "1",
-    "line": "1"
+    "line": "5"
   },
   "children": [
     {
       "kind": "Import",
       "attributes": {
         "col": "1",
-        "line": "1",
-        "importObject": "ioPlus"
+        "line": "5"
       },
       "children": []
     },
@@ -18,22 +17,22 @@
       "kind": "Class",
       "attributes": {
         "col": "1",
-        "line": "2",
-        "className": "HelloWorld"
+        "line": "5",
+        "className": "T"
       },
       "children": [
         {
           "kind": "MethodDeclaration",
           "attributes": {
-            "col": "2",
-            "line": "4"
+            "col": "5",
+            "line": "6"
           },
           "children": [
             {
               "kind": "Main",
               "attributes": {
-                "col": "21",
-                "line": "4"
+                "col": "24",
+                "line": "6"
               },
               "children": []
             },
@@ -41,32 +40,194 @@
               "kind": "MainArguments",
               "attributes": {
                 "col": "39",
-                "line": "4",
-                "variable": "args"
+                "line": "6",
+                "variable": "s"
               },
               "children": []
             },
             {
               "kind": "MethodBody",
               "attributes": {
-                "col": "3",
-                "line": "5"
+                "col": "9",
+                "line": "7"
               },
               "children": [
                 {
-                  "kind": "IDstatement",
+                  "kind": "VarDeclaration",
                   "attributes": {
-                    "col": "3",
-                    "line": "5",
-                    "ID": "ioPlus"
+                    "col": "9",
+                    "line": "7",
+                    "variable": "a"
                   },
                   "children": [
                     {
-                      "kind": "DotMethodCall",
+                      "kind": "Type",
                       "attributes": {
-                        "col": "10",
-                        "line": "5",
-                        "DotMethodCall": "printHelloWorld"
+                        "col": "9",
+                        "line": "7",
+                        "type": "int"
+                      },
+                      "children": [
+                        {
+                          "kind": "IntArrayVarType",
+                          "attributes": {
+                            "col": "13",
+                            "line": "7"
+                          },
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "VarDeclaration",
+                  "attributes": {
+                    "col": "9",
+                    "line": "8",
+                    "variable": "c"
+                  },
+                  "children": [
+                    {
+                      "kind": "Type",
+                      "attributes": {
+                        "col": "9",
+                        "line": "8",
+                        "type": "int"
+                      },
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "kind": "IDstatement",
+                  "attributes": {
+                    "col": "9",
+                    "line": "10",
+                    "ID": "a"
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionTerminal",
+                      "attributes": {
+                        "col": "13",
+                        "line": "10"
+                      },
+                      "children": [
+                        {
+                          "kind": "Terminal",
+                          "attributes": {
+                            "col": "13",
+                            "line": "10"
+                          },
+                          "children": [
+                            {
+                              "kind": "New",
+                              "attributes": {
+                                "col": "17",
+                                "line": "10"
+                              },
+                              "children": [
+                                {
+                                  "kind": "IntArrayVar",
+                                  "attributes": {
+                                    "col": "17",
+                                    "line": "10"
+                                  },
+                                  "children": [
+                                    {
+                                      "kind": "ExpressionTerminal",
+                                      "attributes": {
+                                        "col": "21",
+                                        "line": "10"
+                                      },
+                                      "children": [
+                                        {
+                                          "kind": "Terminal",
+                                          "attributes": {
+                                            "Integer": "0",
+                                            "col": "21",
+                                            "line": "10"
+                                          },
+                                          "children": []
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VarAssignment",
+                      "attributes": {
+                        "col": "23",
+                        "line": "10"
+                      },
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "kind": "IDstatement",
+                  "attributes": {
+                    "col": "9",
+                    "line": "11",
+                    "ID": "c"
+                  },
+                  "children": [
+                    {
+                      "kind": "ExpressionTerminal",
+                      "attributes": {
+                        "col": "13",
+                        "line": "11",
+                        "ID": "a"
+                      },
+                      "children": []
+                    },
+                    {
+                      "kind": "ArrayAccess",
+                      "attributes": {
+                        "col": "15",
+                        "line": "11"
+                      },
+                      "children": [
+                        {
+                          "kind": "ExpressionTerminal",
+                          "attributes": {
+                            "col": "15",
+                            "line": "11"
+                          },
+                          "children": [
+                            {
+                              "kind": "Terminal",
+                              "attributes": {
+                                "col": "15",
+                                "line": "11"
+                              },
+                              "children": [
+                                {
+                                  "kind": "BooleanTrue",
+                                  "attributes": {
+                                    "col": "15",
+                                    "line": "11"
+                                  },
+                                  "children": []
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "VarAssignment",
+                      "attributes": {
+                        "col": "20",
+                        "line": "11"
                       },
                       "children": []
                     }
