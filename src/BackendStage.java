@@ -59,7 +59,7 @@ public class BackendStage implements JasminBackend {
             // TODO: OllirClass needs to implements "getMethods()" with returns a List or Set with
             //    the methods present in the program at hand.
 
-            jasminCode.append("\n.class public "+ollirClass.getClassName()+"\n");
+            jasminCode.append(".class public "+ollirClass.getClassName()+"\n");
 
             if(ollirClass.getSuperClass()==null)
             {

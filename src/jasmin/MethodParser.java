@@ -182,43 +182,71 @@ public class MethodParser {
         var name= ((Operand) instruction.getDest()).getName();
         var variable = this.method.getVarTable().get(name);
 
-        switch (instruction.getTypeOfAssign().getTypeOfElement()){
-            case INT32:
-                if(instruction.getRhs().getInstType().equals(InstructionType.NOPER)){
-                    loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
-                    /*
-                    if (((SingleOpInstruction) instruction.getRhs()).getSingleOperand().isLiteral()){
-                        //loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
-                        storeStack(instruction.getDest());
-                    }
-                    else{
-                        //loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
+        switch(instruction.getRhs().getInstType()){
+            case NOPER:
+                switch (instruction.getTypeOfAssign().getTypeOfElement()) {
+                    case INT32:
+                        loadStack(((SingleOpInstruction) instruction.getRhs()).getSingleOperand());
                         storeStack((instruction.getDest()));
-                    }
-
-                     */
-                    storeStack((instruction.getDest()));
-                }
-                break;
-            case OBJECTREF:
-                //loadStack(instruction.getDest());
-                //System.out.println(instruction.getRhs().getInstType());
-
-                switch (instruction.getRhs().getInstType()){
-                    case CALL:
-                        generateCall((CallInstruction) instruction.getRhs());
-                        //storeStack((instruction.getDest()));
                         break;
                     default:
-                        addComment("Assignment instruction type " + instruction.getRhs().getInstType() + " is missing");
+                        addComment("ASSIGN TYPE NOPER INSTRUCTION TYPE " + instruction.getTypeOfAssign().getTypeOfElement() + " IS MISSING");
                 }
                 break;
-
-
+            case CALL:
+                switch (instruction.getTypeOfAssign().getTypeOfElement()){
+                    case OBJECTREF:
+                        break;
+                    default:
+                        addComment("ASSIGN TYPE CALL INSTRUCTION TYPE " + instruction.getTypeOfAssign().getTypeOfElement() + " IS MISSING");
+                }
+                break;
+            case BINARYOPER:
+                generateExpression((BinaryOpInstruction) instruction.getRhs());
+                storeStack((instruction.getDest()));
+                break;
             default:
-                addComment("Missing ASSIGN TYPE " + instruction.getTypeOfAssign().getTypeOfElement());
-
+                addComment("Assign instruction " + instruction.getRhs().getInstType() + " is missing");
         }
+    }
+
+    private void generateExpression(BinaryOpInstruction instruction){
+        loadStack(instruction.getLeftOperand());
+        switch (instruction.getUnaryOperation().getOpType()){
+            case ADD:
+                generateAdd(instruction.getRightOperand());
+                break;
+            case SUB:
+                generateSub(instruction.getRightOperand());
+                break;
+            case MUL:
+                generateMul(instruction.getRightOperand());
+                break;
+            case DIV:
+                generateDiv(instruction.getRightOperand());
+            default:
+                addComment("Expression operation " + instruction.getUnaryOperation().getOpType() + " is missing");
+        }
+    }
+
+    private void generateAdd(Element rightSide){
+        loadStack(rightSide);
+        instructionsCode += "\t\tiadd\n";
+    }
+
+    private void generateSub(Element rightSide){
+        loadStack(rightSide);
+        instructionsCode += "\t\tisub\n";
+    }
+
+    private void generateMul(Element rightSide){
+        loadStack(rightSide);
+        instructionsCode += "\t\timul\n";
+    }
+
+    private void generateDiv(Element rightSide){
+        loadStack(rightSide);
+        instructionsCode += "\t\tidiv\n";
     }
 
     private void generateGetField(GetFieldInstruction instruction) {
@@ -248,10 +276,10 @@ public class MethodParser {
             var literal = ((LiteralElement) e).getLiteral();
 
             if(e.getType().getTypeOfElement().equals(ElementType.INT32)){
-                generateIConst(Integer.parseInt(literal));
+                generateIConstant(Integer.parseInt(literal));
             }
             else{
-                addComment("ICONST EQUIVALENT FOR LITERAL " + e.getType().getTypeOfElement() + " IS MISSING");
+                addComment("ICONSTANT EQUIVALENT FOR LITERAL " + e.getType().getTypeOfElement() + " IS MISSING");
             }
         }
         else{
@@ -339,9 +367,19 @@ public class MethodParser {
         this.instructionsCode+="\t\tiload_"+index+"\n";
     }
 
-    private void generateIConst(int index){
+    private void generateIConstant(int literal){
         putStack();
-        this.instructionsCode += "\t\ticonst_" + index + "\n";
+        if (literal >= 0 && literal <= 5){
+            this.instructionsCode += "\t\ticonst_" + literal + "\n";
+        } else if (literal == -1){
+            this.instructionsCode += "\t\ticonst_m1\n";
+        } else if (literal >= -128 && literal <= 127){
+            this.instructionsCode += "\t\tbipush " + literal + "\n";
+        } else if (literal >= -32768 && literal <= 32767){
+            this.instructionsCode += "\t\tsipush " + literal + "\n";
+        } else {
+            this.instructionsCode += "\t\tldc " + literal + "\n";
+        }
     }
 
     private void putStack(){

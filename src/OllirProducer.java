@@ -37,8 +37,12 @@ public class OllirProducer implements JmmVisitor {
     @Override
     public Object visit(JmmNode node, Object data) {
         switch (node.getKind()) {
+            case "Import":
+                generateImport(node);
+                break;
             case "Class":
                 generateClass(node);
+                break;
         }
 
         return defaultVisit(node, "");
@@ -62,6 +66,10 @@ public class OllirProducer implements JmmVisitor {
 
     @Override
     public void addVisit(String kind, BiFunction method) {
+    }
+
+    private void generateImport(JmmNode importNode){
+        code += "import " + importNode.get("importObject") + ";\n";
     }
 
     private void generateClass(JmmNode classNode) {
