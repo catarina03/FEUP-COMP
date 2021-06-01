@@ -213,15 +213,22 @@ public class MethodParser {
     }
 
     private void generateReturn(ReturnInstruction instruction){
-        switch (instruction.getOperand().getType().getTypeOfElement()) {
-            case INT32:
-                loadStack(instruction.getOperand());
-                this.instructionsCode += "\t\tireturn\n";
-                break;
-            default:
-                addComment("Missing RETURN TYPE " + instruction.getElementType());
-                break;
+        if(instruction.getOperand() == null){
+            //loadStack(instruction.getOperand());
+            this.instructionsCode += "\t\treturn\n";
         }
+        else{
+            switch (instruction.getOperand().getType().getTypeOfElement()) {
+                case INT32:
+                    loadStack(instruction.getOperand());
+                    this.instructionsCode += "\t\tireturn\n";
+                    break;
+                default:
+                    addComment("Missing RETURN TYPE " + instruction.getElementType());
+                    break;
+            }
+        }
+
     }
 
     private void generateAssign(AssignInstruction instruction){

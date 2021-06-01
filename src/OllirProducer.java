@@ -1044,8 +1044,5 @@ public class OllirProducer implements JmmVisitor {
         }
         return Optional.empty();
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 96fd2eee0622f15ec96e1319224b56a78f42354a
 }
