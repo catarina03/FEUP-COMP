@@ -1,0 +1,13 @@
+import ioPlus;
+class HelloWorld {
+    int a;
+    public static void main(String[] args) {
+          HelloWorld helloWorld;
+          helloWorld = new HelloWorld();
+          helloWorld.add(3);
+    }
+    public int add(int aux){
+        ioPlus.printResult(aux);
+        return aux;
+    }
+}

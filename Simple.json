@@ -1,0 +1,82 @@
+{
+  "kind": "Program",
+  "attributes": {
+    "col": "1",
+    "line": "1"
+  },
+  "children": [
+    {
+      "kind": "Import",
+      "attributes": {
+        "col": "1",
+        "line": "1",
+        "importObject": "ioPlus"
+      },
+      "children": []
+    },
+    {
+      "kind": "Class",
+      "attributes": {
+        "col": "1",
+        "line": "2",
+        "className": "HelloWorld"
+      },
+      "children": [
+        {
+          "kind": "MethodDeclaration",
+          "attributes": {
+            "col": "2",
+            "line": "4"
+          },
+          "children": [
+            {
+              "kind": "Main",
+              "attributes": {
+                "col": "21",
+                "line": "4"
+              },
+              "children": []
+            },
+            {
+              "kind": "MainArguments",
+              "attributes": {
+                "col": "39",
+                "line": "4",
+                "variable": "args"
+              },
+              "children": []
+            },
+            {
+              "kind": "MethodBody",
+              "attributes": {
+                "col": "3",
+                "line": "5"
+              },
+              "children": [
+                {
+                  "kind": "IDstatement",
+                  "attributes": {
+                    "col": "3",
+                    "line": "5",
+                    "ID": "ioPlus"
+                  },
+                  "children": [
+                    {
+                      "kind": "DotMethodCall",
+                      "attributes": {
+                        "col": "10",
+                        "line": "5",
+                        "DotMethodCall": "printHelloWorld"
+                      },
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

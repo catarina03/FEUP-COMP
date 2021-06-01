@@ -201,7 +201,7 @@ public class OptimizeTest {
 
     @Test
     public void testPrintAddResult() {
-        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/printAddResult.jmm");
+        String jmmParser = SpecsIo.getResource("fixtures/public/helloWorld/printAdd.jmm");
         JmmSemanticsResult semanticsResult = TestUtils.analyse(jmmParser);
 
         var result = TestUtils.optimize(semanticsResult, false);

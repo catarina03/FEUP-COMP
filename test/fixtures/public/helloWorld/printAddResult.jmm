@@ -3,18 +3,32 @@ class HelloWorld {
     int a;
     public static void main(String[] args) {
           HelloWorld helloWorld;
-          helloWorld = new HelloWorld();
+          int result;
 
-          //ioPlus.printHelloWorld();
-          //helloWorld.add(3);
+          helloWorld = new HelloWorld();
+          result = helloWorld.add(3);
+          result = helloWorld.test();
+          helloWorld.test();
+          ioPlus.printResult(result);
     }
+
+    public int test(){
+        int test;
+        test = 5;
+        test = this.test();
+        return test;
+    }
+
     public int add(int aux){
+    /*
         int b;
         int c;
+
         c = 4;
-        b = c;
         a = 2;
-        //ioPlus.printResult(aux);
+        b = c * a - aux;
+        ioPlus.printResult(b);
+        */
         return aux;
     }
 }
