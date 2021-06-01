@@ -2,11 +2,10 @@ import ioPlus;
 class HelloWorld {
     int a;
     public static void main(String[] args) {
-          ioPlus.printHelloWorld();
-    }
-    public int add(int aux){
-        int b;
-        b = a;
-        return aux;
+         int b;
+
+         a = 5;
+         b = a;
+         ioPlus.printResult(b);
     }
 }

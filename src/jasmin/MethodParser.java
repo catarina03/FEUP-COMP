@@ -359,7 +359,13 @@ public class MethodParser {
 
     private void generateIStore(int index){
         popStack();
-        this.instructionsCode += "\t\tistore_" + index + "\n";
+        if (index > 3 || index < 0){
+            this.instructionsCode += "\t\tistore " + index + "\n";
+        }
+        else{
+            this.instructionsCode += "\t\tistore_" + index + "\n";
+        }
+
     }
 
     private void generateAStore(int index){
@@ -374,7 +380,12 @@ public class MethodParser {
 
     private void generateIload(int index){
         putStack();
-        this.instructionsCode+="\t\tiload_"+index+"\n";
+        if (index > 3 || index < 0){
+            this.instructionsCode+="\t\tiload "+index+"\n";
+        }
+        else{
+            this.instructionsCode+="\t\tiload_"+index+"\n";
+        }
     }
 
     private void generateIConstant(int literal){
