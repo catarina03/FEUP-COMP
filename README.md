@@ -13,6 +13,11 @@
 **GLOBAL Grade of the project: 16**
 
 **SUMMARY: (Describe what your tool does and its main features.)**
+The tool built serves as a compiler of .jmm files, written in the Java-- language, a subset of the Java language. All programs that are valid in the Java-- language are also valid in the Java language. 
+The generated AST and symbol table, all together are tools for the next layers of the compiler: semantic analysis, OLLIR and Jasmin generation.
+Starting with the grammar, it allows to create a AST with all the nodes contained in the original jmm file, making it easier to traverse the code. The symbol table also stores valuable information about the methods and variables available in each scope of the analysed class.
+The compiler generates OLLIR code from the previously generated AST. It is able to parse the OLLIR code and detect errors in it. 
+The compiler generates files of the classes with instructions accepted by jasmin, based on the generated OLLIR equivalent. The generated classes given Java-- code can be integrated in a Java application.
 
 **DEALING WITH SYNTACTIC ERRORS:**
 - Deals with up to 10 errors inside the while condition
