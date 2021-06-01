@@ -373,7 +373,7 @@ public class OllirProducer implements JmmVisitor {
                         ExpressionVisitor expressionVisitor = new ExpressionVisitor(this.currentMethodName);
                         expressionVisitor.tempVarNum = this.tempVarNum;
                         expressionVisitor.returnVar = node.get("ID");
-                        String returnVar = expressionVisitor.visit(child, analyser);
+                        expressionVisitor.visit(child, analyser);
                         code += expressionVisitor.code;
 /*
                         code += "\t\t" + node.get("ID") + "." + OllirUtils.getType(getNodeType(node)) + " :=." + OllirUtils.getType(getNodeType(node)) + " " + returnVar + "." + OllirUtils.getType(getNodeType(node)) + ";\n";
@@ -689,12 +689,15 @@ public class OllirProducer implements JmmVisitor {
         //métodos DESTA CLASSE  invokevirtual
         if(table.getMethods().contains(node.get("DotMethodCall"))){
             if (node.getNumChildren() == 0) { // sem argumentos
+                String dotMethodReturn = OllirUtils
+                        .getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName());
+
                 if(node.getParent().getOptional("ID").isPresent()){ //call sem this
                     auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
-                            + "\").V;\n";
+                            + "\")."+ dotMethodReturn+";\n";
                 }else{  // call com this
                     auxCode += "\t\tinvokevirtual(this, \"" + node.get("DotMethodCall")
-                            + "\").V;\n";
+                            + "\")."+ dotMethodReturn+" ;\n";
                 }
             } else {// com argumentos
                 auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
@@ -842,6 +845,7 @@ public class OllirProducer implements JmmVisitor {
         if (node.getChildren().get(0).getNumChildren() != 0
                 && node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
                 && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not")
+                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("This")
                 && node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {           
                 code += "\t\tif" + "(";
 
@@ -948,7 +952,7 @@ public class OllirProducer implements JmmVisitor {
             ExpressionVisitor expressionVisitor = new ExpressionVisitor(this.currentMethodName);
             expressionVisitor.tempVarNum = this.tempVarNum;
             expressionVisitor.visit(node.getChildren().get(0), analyser);
-            code += expressionVisitor.auxConditionCode;  //TODO: do the same for ifs
+            code += expressionVisitor.auxConditionCode;  
             code += "\t\tif" + " (";
             code += expressionVisitor.conditionCode;
             this.tempVarNum = expressionVisitor.tempVarNum;

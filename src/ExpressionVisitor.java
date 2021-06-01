@@ -1,17 +1,13 @@
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
-import pt.up.fe.comp.jmm.ast.JmmVisitor;
-import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
-    private String aux1;
-    private String aux2;
-    private String aux3;
     public String returnVar;
     public String code = "";
     public String conditionCode="";
@@ -138,14 +134,14 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         if(getNextSibling(node).isPresent() && (getNextSibling(node).get().getKind().equals("Less") || getNextSibling(
                 node).get().getKind().equals("Plus") || getNextSibling(node).get().getKind()
                         .equals("Minus") || getNextSibling(node).get().getKind().equals("Div") || getNextSibling(node).get().getKind()
-                        .equals("Mul")) && !dotMethodCondition){  //FIXME: verificar se acontece também para outros operadores (and) na presença de dot methods do lado direito
+                        .equals("Mul")) && !dotMethodCondition && LevelVisit<=1){  //FIXME: verificar se acontece também para outros operadores (and) na presença de dot methods do lado direito
             dotMethodCondition=true;
             visit(getNextSibling(node).get(), analyser);
         }
 
         if(node.getOptional("ID").isPresent()){
             LevelVisit--;
-            return node.get("ID");  //FIXME: isto é para as continhas mas as continhas ainda não estão feitas a 100%
+            return node.get("ID"); 
         }
         LevelVisit--;
         return visit(node.getChildren().get(0), analyser);
@@ -200,7 +196,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
             //TODO: do we need auxConditionCode here??
             code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
-            conditionCode += " " + left + ".i32 <.bool " + right + ".i32 ";
+            conditionCode = " " + left + ".i32 <.bool " + right + ".i32 ";
         }
         LevelVisit--;
         return returnVar;
@@ -372,7 +368,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                 String dotMethodReturn = OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName());
                 //if not this
                 if(getUpperSibling(node).get().getOptional("ID").isPresent()){
-                    auxCode += "\t\taux"+tempVarNum+"."+ dotMethodReturn +":=."+dotMethodReturn+" invokevirtual(" + getUpperSibling(node).get().get("ID") + "."
+                    auxCode += "\t\taux"+tempVarNum+"."+ dotMethodReturn +" :=."+dotMethodReturn+" invokevirtual(" + getUpperSibling(node).get().get("ID") + "."
                         + OllirUtils.getType(getNodeType(
                                 getUpperSibling(node).get())) + ", \"" + node.get("DotMethodCall")
                         + "\")."+OllirUtils.getType(getNodeType(
@@ -380,10 +376,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
                 //if this
                 }else{
-                    auxCode += "\t\taux" + tempVarNum + "." + dotMethodReturn + ":=." + dotMethodReturn + " invokevirtual("
+                    auxCode += "\t\taux" + tempVarNum + "." + dotMethodReturn + " :=." + dotMethodReturn + " invokevirtual("
                             + "this, \""
                             + node.get("DotMethodCall") + "\")."
-                            + OllirUtils.getType(getNodeType(getUpperSibling(node).get())) + ";\n";
+                            + dotMethodReturn + ";\n";
                 }
                 returnVar = "aux" + tempVarNum;
                 tempVarNum++;
@@ -525,8 +521,11 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                 auxCode += ").V;\n";
             }
         }
+
+        conditionCode = returnVar;
         auxCode += auxConditionCode;
         code += auxCode;  
+        LevelVisit--;
         return returnVar; 
     }
 
@@ -534,7 +533,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
     public String getNodeType(JmmNode node) {
         String type;
-        scopeVariables = analyser.getSymbolTable().getLocalVariables(node.get("functionName"));
+        scopeVariables = analyser.getSymbolTable().getLocalVariables(currentMethodName);
 
         List<String> methodParametersNames = new ArrayList<>();
         List<String> scopeVariablesNames = new ArrayList<>();
@@ -597,4 +596,5 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         }
         return Optional.empty();
     }
+
 }
