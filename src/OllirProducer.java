@@ -130,6 +130,7 @@ public class OllirProducer implements JmmVisitor {
 
         generateMainHeader(node);
         generateMainBody(node);
+        code += "\t\tret.V;\n";
         code += "\t}\n";
     }
 
@@ -725,7 +726,7 @@ public class OllirProducer implements JmmVisitor {
                             auxCode += ", aux" + tempVarNum + ".i32";
                             tempVarNum++;
                             i++; //ignore the next kid cause its array access
-
+                        
                         } else {
                             auxCode += ", " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
@@ -792,7 +793,7 @@ public class OllirProducer implements JmmVisitor {
                             auxCode += ", aux" + tempVarNum + ".i32";
                             tempVarNum++;
                             i++; // ignore the next kid cause its array access
-
+                        
                         }else{
                             auxCode+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                         }
@@ -1043,5 +1044,8 @@ public class OllirProducer implements JmmVisitor {
         }
         return Optional.empty();
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 96fd2eee0622f15ec96e1319224b56a78f42354a
 }

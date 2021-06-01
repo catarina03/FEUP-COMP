@@ -135,7 +135,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
     private String dealWithExpressionTerminal(JmmNode node, Analyser analyser) {
         
-        if(getNextSibling(node).isPresent() && getNextSibling(node).get().getKind().equals("Less") && !dotMethodCondition){  //FIXME: verificar se acontece também para outros operadores na presença de dot methods do lado direito
+        if(getNextSibling(node).isPresent() && (getNextSibling(node).get().getKind().equals("Less") || getNextSibling(
+                node).get().getKind().equals("Plus") || getNextSibling(node).get().getKind()
+                        .equals("Minus") || getNextSibling(node).get().getKind().equals("Div") || getNextSibling(node).get().getKind()
+                        .equals("Mul")) && !dotMethodCondition){  //FIXME: verificar se acontece também para outros operadores (and) na presença de dot methods do lado direito
             dotMethodCondition=true;
             visit(getNextSibling(node).get(), analyser);
         }
@@ -204,28 +207,53 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     }
 
     private String dealWithPlus(JmmNode node, Analyser analyser){
-        String left = visit(node.getChildren().get(0), analyser);
-        String right = visit(node.getChildren().get(1), analyser);
+        String returnVar="";
+        if(!node.getChildren().get(1).getKind().equals("DotMethodCall")){
+            String left = visit(node.getChildren().get(0), analyser);
+            String right = visit(node.getChildren().get(1), analyser);
 
-        String leftExpression = "";
-        leftExpression = left + ".i32";
-
-
-        String rightExpression = "";
-        rightExpression = right + ".i32";
+            String leftExpression = "";
+            leftExpression = left + ".i32";
 
 
-        String returnVar = "aux" + tempVarNum;
-        tempVarNum++;
+            String rightExpression = "";
+            rightExpression = right + ".i32";
 
-        if(LevelVisit == 1){
+
+            returnVar = "aux" + tempVarNum;
+            tempVarNum++;
+
+            if(LevelVisit == 1){
+                returnVar = this.returnVar;
+            }
+
+            code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" +.i32 "+rightExpression+";\n";
+            if (LevelVisit != 1)
+                auxConditionCode += code;
+            conditionCode = " "+ leftExpression+" +.i32 "+rightExpression + " ";
+           
+        }else{
+            String left = visit(getUpperSibling(node).get(), analyser);
+            String right = visit(node.getChildren().get(1), analyser);
+
+            String leftExpression = "";
+            leftExpression = left + ".i32";
+
+            String rightExpression = "";
+            rightExpression = right + ".i32";
+
+            returnVar = "aux" + tempVarNum;
+            tempVarNum++;
+
+            if(LevelVisit == 1){
             returnVar = this.returnVar;
-        }
+            }
 
-        code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" +.i32 "+rightExpression+";\n";
-        if (LevelVisit != 1)
-            auxConditionCode += code;
-        conditionCode = " "+ leftExpression+" +.i32 "+rightExpression + " ";
+            code += "\t\t" + returnVar + ".i32 :=.i32 " + leftExpression + " +.i32 " + rightExpression + ";\n";
+            if (LevelVisit != 1)
+                auxConditionCode += code;
+            conditionCode = " " + leftExpression + " +.i32 " + rightExpression + " ";
+        }
         LevelVisit--;
         return returnVar;
     }
@@ -336,14 +364,29 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
         String auxCode = "";
 
-        SymbolTableManager table = analyser.getSymbolTable(); //TODO: print aux code before condition and condition code inside condition
+        SymbolTableManager table = analyser.getSymbolTable(); 
 
         // métodos DESTA CLASSE invokevirtual
-        if (table.getMethods().contains(node.get("DotMethodCall"))){  //FIXME: COMO FICA O OLLIR QUANDO HÁ DOT METHODS EM CONDIÇÕES
-            if (node.getNumChildren() == 0) { // sem argumentos
-                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "."
-                        + OllirUtils.getType(getNodeType(node.getParent())) + ", \"" + node.get("DotMethodCall")
-                        + "\").V;\n";
+        if (table.getMethods().contains(node.get("DotMethodCall"))){  
+            if (node.getNumChildren() == 0) { // sem argumentos 
+                String dotMethodReturn = OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName());
+                //if not this
+                if(getUpperSibling(node).get().getOptional("ID").isPresent()){
+                    auxCode += "\t\taux"+tempVarNum+"."+ dotMethodReturn +":=."+dotMethodReturn+" invokevirtual(" + getUpperSibling(node).get().get("ID") + "."
+                        + OllirUtils.getType(getNodeType(
+                                getUpperSibling(node).get())) + ", \"" + node.get("DotMethodCall")
+                        + "\")."+OllirUtils.getType(getNodeType(
+                                getUpperSibling(node).get()))+";\n";
+
+                //if this
+                }else{
+                    auxCode += "\t\taux" + tempVarNum + "." + dotMethodReturn + ":=." + dotMethodReturn + " invokevirtual("
+                            + "this, \""
+                            + node.get("DotMethodCall") + "\")."
+                            + OllirUtils.getType(getNodeType(getUpperSibling(node).get())) + ";\n";
+                }
+                returnVar = "aux" + tempVarNum;
+                tempVarNum++;
             } else {// com argumentos
                 auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "."
                         + OllirUtils.getType(getNodeType(node.getParent())) + ", \"" + node.get("DotMethodCall") + "\"";
@@ -356,12 +399,27 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                             auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
-                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { // FIXME: check if
-                                                                                                     // correct compare
-                                                                                                     // to similar
-                                                                                                     // condition below
-                            auxCode += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")";
+                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { 
+                            code += "\t\taux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " :=."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " getfield(this, "
+                                    + node.getChildren().get(i).get("ID") + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                            auxCode += ", aux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            tempVarNum++;
+                        } else if (getNextSibling(node.getChildren().get(i)).isPresent()
+                                && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")) { // array
+                                                                                                                      // access->int
+                                                                                                                      // arrays
+                            code += "\t\taux" + tempVarNum + ".i32 :=.i32 " + node.getChildren().get(i).get("ID") + "["
+                                    + node.getChildren().get(i + 1).getChildren().get(0).get("ID") + ".i32].i32;\n";
+
+                            auxCode += ", aux" + tempVarNum + ".i32";
+                            tempVarNum++;
+                            i++; // ignore the next kid cause its array access
+                        
                         } else {
                             auxCode += ", " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
@@ -427,6 +485,17 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                             auxCode += ", aux" + tempVarNum + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                             tempVarNum++;
+
+                        } else if (getNextSibling(node.getChildren().get(i)).isPresent()
+                            && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")) { // array
+                                                                                                                      // access->int
+                                                                                                                      // arrays
+                            code += "\t\taux" + tempVarNum + ".i32 :=.i32 " + node.getChildren().get(i).get("ID") + "["
+                                    + node.getChildren().get(i + 1).getChildren().get(0).get("ID") + ".i32].i32;\n";
+
+                            auxCode += ", aux" + tempVarNum + ".i32";
+                            tempVarNum++;
+                            i++; // ignore the next kid cause its array access
                         } else {
                             auxCode += ", " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
