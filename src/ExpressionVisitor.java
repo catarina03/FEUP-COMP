@@ -14,6 +14,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     private String aux3;
     public String code = "";
     public String conditionCode="";
+    public String auxConditionCode="";
     public int tempVarNum = 0;
 
     /* other utils */
@@ -22,6 +23,8 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     public List<Symbol> scopeVariables;
     public Analyser analyser;
     public String currentMethodName;
+    public boolean dotMethodCondition=false;
+    public int LevelVisit = 0;
 
     public ExpressionVisitor(String currentMethodName) {
         this.currentMethodName = currentMethodName;
@@ -30,7 +33,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
     public String visit(JmmNode node, Analyser analyser){
         this.analyser = analyser;
-
+        LevelVisit++;
         switch (node.getKind()){
             case "And":
                 return dealWithAnd(node, analyser);
@@ -77,7 +80,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t" + returnVar + ".bool :=.bool "+ leftExpression+ " !.bool " + leftExpression + ";\n";
-        conditionCode += " " + leftExpression + " !.bool " + leftExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " " + leftExpression + " !.bool " + leftExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -111,42 +117,72 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".bool :=.bool "+leftExpression+" &&.bool "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" &&.bool "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" &&.bool "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
     private String dealWithExpressionTerminal(JmmNode node, Analyser analyser) {
+        
+        if(getNextSibling(node).isPresent() && getNextSibling(node).get().getKind().equals("Less") && !dotMethodCondition){  //FIXME: verificar se acontece também para outros operadores na presença de dot methods do lado direito
+            dotMethodCondition=true;
+            visit(getNextSibling(node).get(), analyser);
+        }
+
         if(node.getOptional("ID").isPresent()){
+            LevelVisit--;
             return node.get("ID");  //FIXME: isto é para as continhas mas as continhas ainda não estão feitas a 100%
         }
+        LevelVisit--;
         return visit(node.getChildren().get(0), analyser);
     }
 
     private String dealWithTerminal(JmmNode node, Analyser analyser){
         if(node.getOptional("Integer").isPresent()){
+            LevelVisit--;
             return node.get("Integer");
         }
+        LevelVisit--;
         return visit(node.getChildren().get(0), analyser);
       //  return visit(node.getChildren().get(0), analyser);
     }
 
     private String dealWithTrue(JmmNode node, Analyser analyser){
+        LevelVisit--;
         return "true";
     }
 
     private String dealWithFalse(JmmNode node, Analyser analyser){
+        LevelVisit--;
         return "false";
     }
 
     private String dealWithLess(JmmNode node, Analyser analyser){
-        String left = visit(node.getChildren().get(0), analyser);
-        String right = visit(node.getChildren().get(1), analyser);
+        String returnVar="";
+        if(!node.getChildren().get(1).getKind().equals("DotMethodCall")){
+            String left = visit(node.getChildren().get(0), analyser);
+            String right = visit(node.getChildren().get(1), analyser);
 
-        String returnVar = "aux" + tempVarNum;
-        tempVarNum++;
+            returnVar = "aux" + tempVarNum;
+            tempVarNum++;
+            
+            code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
+            if(LevelVisit!=1) auxConditionCode += code;
+            conditionCode = " "+ left + ".i32 <.bool " + right + ".i32 ";
+        }else{
+            String left = visit(getUpperSibling(node).get(), analyser);
+            String right = visit(node.getChildren().get(1), analyser);
 
-        code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
-        conditionCode += " "+ left + ".i32 <.bool " + right + ".i32 ";
+            returnVar = "aux" + tempVarNum;
+            tempVarNum++;
+
+            //TODO: do we need auxConditionCode here??
+            code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
+            conditionCode += " " + left + ".i32 <.bool " + right + ".i32 ";
+        }
+        LevelVisit--;
         return returnVar;
     }
 
@@ -166,7 +202,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" +.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" +.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" +.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -187,7 +226,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" -.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" -.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;        
+        conditionCode = " "+ leftExpression+" -.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -207,7 +249,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" *.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" *.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" *.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -227,7 +272,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" /.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" /.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" /.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -314,9 +362,9 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
             if (node.getNumChildren() == 0) { // sem argumentos
                 if (node.get("DotMethodCall").equals("length")) {
-                    auxCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength("
+                    auxConditionCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength("
                             + getUpperSibling(node).get().get("ID") + ".array.i32).i32;\n";
-                    auxCode += "\t\t" + node.getParent().get("ID") + ".i32 :=.i32 aux" + tempVarNum + ".i32;\n";
+                    returnVar = "aux"+ tempVarNum;
                     tempVarNum++;
                 } else {
                     auxCode += "\t\tinvokestatic(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall")
@@ -375,6 +423,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                 auxCode += ").V;\n";
             }
         }
+        auxCode += auxConditionCode;
         code += auxCode;  
         return returnVar; 
     }
@@ -437,4 +486,13 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         return Optional.empty();
     }
 
+    private Optional<JmmNode> getNextSibling(JmmNode node) {
+        JmmNode parent = node.getParent();
+        for (int i = 0; i < parent.getNumChildren()-1; i++) {
+            if (node.toString().equals(parent.getChildren().get(i).toString())) {
+                return Optional.of(parent.getChildren().get(i + 1));
+            }
+        }
+        return Optional.empty();
+    }
 }
