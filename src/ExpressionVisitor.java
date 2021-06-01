@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     private String aux1;
@@ -13,6 +14,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     private String aux3;
     public String code = "";
     public String conditionCode="";
+    public String auxConditionCode="";
     public int tempVarNum = 0;
 
     /* other utils */
@@ -20,14 +22,18 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     public List<Symbol> methodParameters;
     public List<Symbol> scopeVariables;
     public Analyser analyser;
+    public String currentMethodName;
+    public boolean dotMethodCondition=false;
+    public int LevelVisit = 0;
 
-    public ExpressionVisitor() {
+    public ExpressionVisitor(String currentMethodName) {
+        this.currentMethodName = currentMethodName;
         setDefaultVisit(this::visit);
     }
 
     public String visit(JmmNode node, Analyser analyser){
         this.analyser = analyser;
-
+        LevelVisit++;
         switch (node.getKind()){
             case "And":
                 return dealWithAnd(node, analyser);
@@ -51,11 +57,8 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                 return dealWithMul(node, analyser);
             case "Div":
                 return dealWithDiv(node, analyser);
-                /*
             case "DotMethodCall":
                 return dealWithDotMethodCall(node, analyser);
-
-                 */
             default:
                 return "; " + node.getKind() + " IS MISSING\n";
         }
@@ -77,7 +80,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t" + returnVar + ".bool :=.bool "+ leftExpression+ " !.bool " + leftExpression + ";\n";
-        conditionCode += " " + leftExpression + " !.bool " + leftExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " " + leftExpression + " !.bool " + leftExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -111,42 +117,72 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".bool :=.bool "+leftExpression+" &&.bool "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" &&.bool "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" &&.bool "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
     private String dealWithExpressionTerminal(JmmNode node, Analyser analyser) {
+        
+        if(getNextSibling(node).isPresent() && getNextSibling(node).get().getKind().equals("Less") && !dotMethodCondition){  //FIXME: verificar se acontece também para outros operadores na presença de dot methods do lado direito
+            dotMethodCondition=true;
+            visit(getNextSibling(node).get(), analyser);
+        }
+
         if(node.getOptional("ID").isPresent()){
+            LevelVisit--;
             return node.get("ID");  //FIXME: isto é para as continhas mas as continhas ainda não estão feitas a 100%
         }
+        LevelVisit--;
         return visit(node.getChildren().get(0), analyser);
     }
 
     private String dealWithTerminal(JmmNode node, Analyser analyser){
         if(node.getOptional("Integer").isPresent()){
+            LevelVisit--;
             return node.get("Integer");
         }
+        LevelVisit--;
         return visit(node.getChildren().get(0), analyser);
       //  return visit(node.getChildren().get(0), analyser);
     }
 
     private String dealWithTrue(JmmNode node, Analyser analyser){
+        LevelVisit--;
         return "true";
     }
 
     private String dealWithFalse(JmmNode node, Analyser analyser){
+        LevelVisit--;
         return "false";
     }
 
     private String dealWithLess(JmmNode node, Analyser analyser){
-        String left = visit(node.getChildren().get(0), analyser);
-        String right = visit(node.getChildren().get(1), analyser);
+        String returnVar="";
+        if(!node.getChildren().get(1).getKind().equals("DotMethodCall")){
+            String left = visit(node.getChildren().get(0), analyser);
+            String right = visit(node.getChildren().get(1), analyser);
 
-        String returnVar = "aux" + tempVarNum;
-        tempVarNum++;
+            returnVar = "aux" + tempVarNum;
+            tempVarNum++;
+            
+            code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
+            if(LevelVisit!=1) auxConditionCode += code;
+            conditionCode = " "+ left + ".i32 <.bool " + right + ".i32 ";
+        }else{
+            String left = visit(getUpperSibling(node).get(), analyser);
+            String right = visit(node.getChildren().get(1), analyser);
 
-        code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
-        conditionCode += " "+ left + ".i32 <.bool " + right + ".i32 ";
+            returnVar = "aux" + tempVarNum;
+            tempVarNum++;
+
+            //TODO: do we need auxConditionCode here??
+            code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
+            conditionCode += " " + left + ".i32 <.bool " + right + ".i32 ";
+        }
+        LevelVisit--;
         return returnVar;
     }
 
@@ -166,7 +202,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" +.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" +.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" +.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -187,7 +226,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" -.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" -.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;        
+        conditionCode = " "+ leftExpression+" -.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -207,7 +249,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" *.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" *.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" *.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
@@ -227,17 +272,20 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         tempVarNum++;
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" /.i32 "+rightExpression+";\n";
-        conditionCode += " "+ leftExpression+" /.i32 "+rightExpression + " ";
+        if (LevelVisit != 1)
+            auxConditionCode += code;
+        conditionCode = " "+ leftExpression+" /.i32 "+rightExpression + " ";
+        LevelVisit--;
         return returnVar;
     }
 
 
-/*
     private String dealWithDotMethodCall(JmmNode node, Analyser analyser){
+        String returnVar="";
+
         classFields = analyser.getSymbolTable().getFields();
 
-        String methodName = node.get("DotMethodCall");
-        methodParameters = analyser.getSymbolTable().getParameters(methodName);
+        methodParameters = analyser.getSymbolTable().getParameters(currentMethodName);
 
         List<String> classFieldsNames = new ArrayList<>();
         if (classFields != null) {
@@ -253,28 +301,36 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
             }
         }
 
+        String auxCode = "";
 
-        //métodos DESTA CLASSE  invokevirtual
-        if(analyser.getSymbolTable().getMethods().contains(methodName)){
+        SymbolTableManager table = analyser.getSymbolTable(); //TODO: print aux code before condition and condition code inside condition
+
+        // métodos DESTA CLASSE invokevirtual
+        if (table.getMethods().contains(node.get("DotMethodCall"))){  //FIXME: COMO FICA O OLLIR QUANDO HÁ DOT METHODS EM CONDIÇÕES
             if (node.getNumChildren() == 0) { // sem argumentos
-                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
+                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "."
+                        + OllirUtils.getType(getNodeType(node.getParent())) + ", \"" + node.get("DotMethodCall")
                         + "\").V;\n";
             } else {// com argumentos
-                code += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
+                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "."
+                        + OllirUtils.getType(getNodeType(node.getParent())) + ", \"" + node.get("DotMethodCall") + "\"";
                 for (int i = 0; i < node.getNumChildren(); i++) {
                     // expression terminal with ID
                     if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
                             && node.getChildren().get(i).getOptional("ID").isPresent()) {
                         if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
                             int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
-                            code += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
-                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
-                            code += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { // FIXME: check if
+                                                                                                     // correct compare
+                                                                                                     // to similar
+                                                                                                     // condition below
+                            auxCode += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")";
                         } else {
-                            code += ", " + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                         }
                     }
@@ -283,71 +339,95 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
                             && node.getChildren().get(i).getNumChildren() == 1
                             && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
                             && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
-                        code += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
                     } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
                             && node.getChildren().get(i).getNumChildren() == 1
                             && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
                             && node.getChildren().get(i).getChildren().get(0).getNumChildren() == 1) { // terminal kids
-                        // with boolean
-                        // kids
+                                                                                                       // with boolean
+                                                                                                       // kids
                         if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
                                 .equals("BooleanTrue")) {
-                            code += ", 1.bool";
+                            auxCode += ", 1.bool";
                         } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
                                 .equals("BooleanFalse")) {
-                            code += ", 0.bool";
+                            auxCode += ", 0.bool";
                         }
                     }
                 }
-                code += ").V;\n";
+                auxCode += ").V;\n";
             }
 
-        }else{ // metodos de OUTRAS CLASSES
+        } else { // metodos de OUTRAS CLASSES / length
 
-            if(node.getNumChildren()==0){  //sem argumentos
-                code += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
-            }else{//com argumentos
-                code += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
-                for(int i=0; i<node.getNumChildren();i++){
-                    //expression terminal with ID
-                    if(node.getChildren().get(i).getKind().equals("ExpressionTerminal") && node.getChildren().get(i).getOptional("ID").isPresent()){
-                        if(methodParameterNames.contains(node.getChildren().get(i).get("ID"))){
+            if (node.getNumChildren() == 0) { // sem argumentos
+                if (node.get("DotMethodCall").equals("length")) {
+                    auxConditionCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength("
+                            + getUpperSibling(node).get().get("ID") + ".array.i32).i32;\n";
+                    returnVar = "aux"+ tempVarNum;
+                    tempVarNum++;
+                } else {
+                    auxCode += "\t\tinvokestatic(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall")
+                            + "\").V;\n";
+                }
+            } else {// com argumentos
+                auxCode += "\t\tinvokestatic(" + node.getParent().get("ID") + ", \"" + node.get("DotMethodCall") + "\"";
+                for (int i = 0; i < node.getNumChildren(); i++) {
+                    // expression terminal with ID
+                    if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getOptional("ID").isPresent()) {
+                        if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
                             int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
-                            if(!node.getChildren().get(i).get("ID").equals("main")){ //Checks if static
+                            if (!node.getChildren().get(i).get("ID").equals("main")) { // Checks if static
                                 index++;
                             }
-                            code += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
+                            auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
-                        }else if(classFieldsNames.contains(node.getChildren().get(i).get("ID"))){
-                            code += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)))+")";
-                        }else{
-                            code+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
+                            code += "\t\taux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " :=."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " getfield(this, "
+                                    + node.getChildren().get(i).get("ID") + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                            auxCode += ", aux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            tempVarNum++;
+                        } else {
+                            auxCode += ", " + node.getChildren().get(i).get("ID") + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                         }
                     }
-                    //expression terminal withoug ID and a terminal kid
+                    // expression terminal withoug ID and a terminal kid
                     else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal") &&
-                            node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
-                        code += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
-                    }else if(node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
-                            && node.getChildren().get(i).getChildren().get(0).getNumChildren()==1){  //terminal kids with boolean kids
-                        if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")){
-                            code += ", 1.bool";
-                        }else if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")){
-                            code += ", 0.bool";
+                            && node.getChildren().get(i).getNumChildren() == 1
+                            && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                            && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                        auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                    } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                            && node.getChildren().get(i).getNumChildren() == 1
+                            && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                            && node.getChildren().get(i).getChildren().get(0).getNumChildren() == 1) { // terminal kids
+                                                                                                       // with boolean
+                                                                                                       // kids
+                        if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                .equals("BooleanTrue")) {
+                            auxCode += ", 1.bool";
+                        } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                .equals("BooleanFalse")) {
+                            auxCode += ", 0.bool";
                         }
                     }
                 }
-                code+=").V;\n";
+                auxCode += ").V;\n";
             }
         }
-        return "";
+        auxCode += auxConditionCode;
+        code += auxCode;  
+        return returnVar; 
     }
 
- */
 
 
     public String getNodeType(JmmNode node) {
@@ -396,4 +476,23 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         return type;
     }
 
+    private Optional<JmmNode> getUpperSibling(JmmNode node) {
+        JmmNode parent = node.getParent();
+        for (int i = 1; i < parent.getNumChildren(); i++) {
+            if (node.toString().equals(parent.getChildren().get(i).toString())) {
+                return Optional.of(parent.getChildren().get(i - 1));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<JmmNode> getNextSibling(JmmNode node) {
+        JmmNode parent = node.getParent();
+        for (int i = 0; i < parent.getNumChildren()-1; i++) {
+            if (node.toString().equals(parent.getChildren().get(i).toString())) {
+                return Optional.of(parent.getChildren().get(i + 1));
+            }
+        }
+        return Optional.empty();
+    }
 }

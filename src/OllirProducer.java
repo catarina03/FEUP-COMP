@@ -282,7 +282,8 @@ public class OllirProducer implements JmmVisitor {
             JmmNode child = node.getChildren().get(i);
             String type = null;
 
-            if (i < node.getNumChildren() - 1 && node.getChildren().get(i + 1).getKind().equals("VarAssignment")) {
+            if (i < node.getNumChildren() - 1 && node.getChildren().get(i + 1).getKind().equals("VarAssignment") && !node
+                    .getChildren().get(i).getKind().equals("DotMethodCall")) {
 
                 if (child.getKind().equals("ExpressionTerminal") && child.getNumChildren() == 0) {
                     type = getNodeType(node);
@@ -336,9 +337,9 @@ public class OllirProducer implements JmmVisitor {
                         }
                     }
                 } else {
-                    JmmNode second = child.getChildren().get(0);
-
+                    
                     if (child.getKind().equals("ExpressionTerminal")) {
+                        JmmNode second = child.getChildren().get(0);
 
                         if (node.getOptional("ID").isPresent() && classFieldsNames.contains(node.get("ID"))) { // putField
                                                                                                                // class
@@ -368,11 +369,14 @@ public class OllirProducer implements JmmVisitor {
                         generateArrayAccess(child, methodParametersNames);
                     } else if (isExpression(child)) {
                         Analyser analyser = new Analyser(table, reports);
-                        ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+                        ExpressionVisitor expressionVisitor = new ExpressionVisitor(this.currentMethodName);
                         expressionVisitor.tempVarNum = this.tempVarNum;
                         String returnVar = expressionVisitor.visit(child, analyser);
                         code += expressionVisitor.code;
+/*
                         code += "\t\t" + node.get("ID") + "." + OllirUtils.getType(getNodeType(node)) + " :=." + OllirUtils.getType(getNodeType(node)) + " " + returnVar + "." + OllirUtils.getType(getNodeType(node)) + ";\n";
+*/
+                        this.tempVarNum = expressionVisitor.tempVarNum;
                     }
                 }
             }else if(node.getChildren().get(i).getKind().equals("DotMethodCall")){ //dotMethodCall
@@ -649,9 +653,9 @@ public class OllirProducer implements JmmVisitor {
         }
 
         if (isInt) {
-            this.tempVarNum++;
             code += "\t\t" + "aux" + this.tempVarNum + ".i32 :=.i32 " + index + ".i32;\n";
             index = "aux" + this.tempVarNum;
+            this.tempVarNum++;
         }
 
         code += "\t\t" + node.getParent().get("ID") + "." + OllirUtils.getType(type) + " :=." + OllirUtils.getType(s.getType().getName())
@@ -696,7 +700,7 @@ public class OllirProducer implements JmmVisitor {
                             auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
-                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
+                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { //FIXME: check if correct compare to similar condition below
                             auxCode += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")";
                         } else {
@@ -728,10 +732,16 @@ public class OllirProducer implements JmmVisitor {
                 auxCode += ").V;\n";
             }
         
-        }else{ // metodos de OUTRAS CLASSES
+        }else{ // metodos de OUTRAS CLASSES / length
 
             if(node.getNumChildren()==0){  //sem argumentos
-                auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
+                if(node.get("DotMethodCall").equals("length")){
+                    auxCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength(" + getUpperSibling(node).get().get("ID") + ".array.i32).i32;\n";
+                    auxCode += "\t\t" + node.getParent().get("ID")+".i32 :=.i32 aux" + tempVarNum + ".i32;\n";
+                    tempVarNum++;
+                }else{
+                    auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
+                }
             }else{//com argumentos
                 auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
                 for(int i=0; i<node.getNumChildren();i++){
@@ -796,31 +806,35 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateIfCondition(JmmNode node) {
-        code += "\t\tif" + "(";
         //check if condition is a lone boolean, if not send to analyzer
-        if (node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
-                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") && node
-                        .getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {           // if (node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
-                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
-                        .equals("BooleanTrue")
-                        || node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
-                                .getKind().equals("BooleanFalse")) {
-                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
-                            .getKind().equals("BooleanTrue"))
-                        code += "1.bool &&.bool 1.bool";
-                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
-                            .getKind().equals("BooleanFalse"))
-                        code += "0.bool &&.bool 0.bool";
-                }
-            // }
+        if (node.getChildren().get(0).getNumChildren() != 0
+                && node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
+                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not")
+                && node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {           
+                code += "\t\tif" + "(";
 
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                    .equals("BooleanTrue")
+                    || node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
+                            .getKind().equals("BooleanFalse")) {
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
+                        .getKind().equals("BooleanTrue"))
+                    code += "1.bool &&.bool 1.bool";
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0)
+                        .getKind().equals("BooleanFalse"))
+                    code += "0.bool &&.bool 0.bool";
+                }
+        
         }
         else {
             Analyser analyser = new Analyser(table, reports);
-            ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+            ExpressionVisitor expressionVisitor = new ExpressionVisitor(this.currentMethodName);
             expressionVisitor.tempVarNum = this.tempVarNum;
             expressionVisitor.visit(node.getChildren().get(0), analyser);
+            code += expressionVisitor.auxConditionCode;
+            code += "\t\tif" + " (";
             code += expressionVisitor.conditionCode;
+            this.tempVarNum = expressionVisitor.tempVarNum;
         }
         code += ") goto Then" + ifCounter + ";\n";
 
@@ -829,14 +843,41 @@ public class OllirProducer implements JmmVisitor {
     private void generateIfBody(JmmNode node) {
         for(int i=0;i<node.getNumChildren();i++){
             code += "\t";
-            generateStatement(node.getChildren().get(i));
+            JmmNode child = node.getChildren().get(i);
+            switch (child.getKind()) {
+                // case "VarDeclaration": //NOT NEEDED
+                case "IDstatement":
+                    generateStatement(child);
+                    break;
+                case "If":
+                    generateIf(child);
+                    break;
+                case "While":
+                    generateWhile(child);
+                    break;
+
+            }
         }
     }
 
     private void generateElseBody(JmmNode node) {
         for (int i = 0; i < node.getNumChildren(); i++){
             code += "\t";
-            generateStatement(node.getChildren().get(i));
+            
+            JmmNode child = node.getChildren().get(i);
+            switch (child.getKind()) {
+                // case "VarDeclaration": //NOT NEEDED
+                case "IDstatement":
+                generateStatement(child);
+                break;
+                case "If":
+                generateIf(child);
+                break;
+                case "While":
+                generateWhile(child);
+                break;
+                
+            }
         }
     }
 
@@ -852,32 +893,33 @@ public class OllirProducer implements JmmVisitor {
     }
 
     private void generateWhileCondition(JmmNode node) {
-        code += "\t\tif" + " (";
         //check if condition is a lone boolean, if not send to analyzer
         if (node.getChildren().get(0).getNumChildren() != 0 
-                && node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
-                && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") && node
-                        .getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
-            // if (node.getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
-                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")
-                        || node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
-                                .equals("BooleanFalse")) {
-                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
-                            .equals("BooleanTrue"))
-                        code += "1.bool &&.bool 1.bool";
-                    if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
-                            .equals("BooleanFalse"))
-                        code += "0.bool &&.bool 0.bool";
-                }
-            // }
+        && node.getChildren().get(0).getChildren().get(0).getNumChildren() != 0
+        && !node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("Not") && node
+        .getChildren().get(0).getChildren().get(0).getKind().equals("Terminal")) {
+            code += "\t\tif" + " (";
+            if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")
+                    || node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                            .equals("BooleanFalse")) {
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                        .equals("BooleanTrue"))
+                    code += "1.bool &&.bool 1.bool";
+                if (node.getChildren().get(0).getChildren().get(0).getChildren().get(0).getKind()
+                        .equals("BooleanFalse"))
+                    code += "0.bool &&.bool 0.bool";
+            }
 
         }
         else {
             Analyser analyser = new Analyser(table, reports);
-            ExpressionVisitor expressionVisitor = new ExpressionVisitor();
+            ExpressionVisitor expressionVisitor = new ExpressionVisitor(this.currentMethodName);
             expressionVisitor.tempVarNum = this.tempVarNum;
             expressionVisitor.visit(node.getChildren().get(0), analyser);
+            code += expressionVisitor.auxConditionCode;  //TODO: do the same for ifs
+            code += "\t\tif" + " (";
             code += expressionVisitor.conditionCode;
+            this.tempVarNum = expressionVisitor.tempVarNum;
         }
         code += ") goto Body" + whileCounter + ";\n";
         code += "\t\tgoto EndLoop" + whileCounter + ";\n";
@@ -886,7 +928,20 @@ public class OllirProducer implements JmmVisitor {
     private void generateWhileBody(JmmNode node) {
         for (int i = 1; i < node.getNumChildren(); i++){
             code += "\t";
-            generateStatement(node.getChildren().get(i));
+            JmmNode child = node.getChildren().get(i);
+            switch (child.getKind()) {
+                // case "VarDeclaration": //NOT NEEDED
+                case "IDstatement":
+                    generateStatement(child);
+                    break;
+                case "If":
+                    generateIf(child);
+                    break;
+                case "While":
+                    generateWhile(child);
+                    break;
+
+            }
         }
         code += "\t\tgoto Loop"+whileCounter+";\n";
     }
