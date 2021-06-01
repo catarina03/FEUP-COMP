@@ -238,21 +238,25 @@ public class MethodParser {
     private void generateAdd(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\tiadd\n";
+        popStack();
     }
 
     private void generateSub(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\tisub\n";
+        popStack();
     }
 
     private void generateMul(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\timul\n";
+        popStack();
     }
 
     private void generateDiv(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\tidiv\n";
+        popStack();
     }
 
     private void generateGetField(GetFieldInstruction instruction) {

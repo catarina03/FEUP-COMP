@@ -12,6 +12,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
     private String aux1;
     private String aux2;
     private String aux3;
+    public String returnVar;
     public String code = "";
     public String conditionCode="";
     public String auxConditionCode="";
@@ -28,6 +29,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
     public ExpressionVisitor(String currentMethodName) {
         this.currentMethodName = currentMethodName;
+        //this.returnVar = returnVar;
         setDefaultVisit(this::visit);
     }
 
@@ -79,6 +81,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
 
+        if(LevelVisit == 1){
+            returnVar = this.returnVar;
+        }
+
         code += "\t\t" + returnVar + ".bool :=.bool "+ leftExpression+ " !.bool " + leftExpression + ";\n";
         if (LevelVisit != 1)
             auxConditionCode += code;
@@ -116,6 +122,9 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
 
+        if(LevelVisit == 1){
+            returnVar = this.returnVar;
+        }
         code += "\t\t"+returnVar+".bool :=.bool "+leftExpression+" &&.bool "+rightExpression+";\n";
         if (LevelVisit != 1)
             auxConditionCode += code;
@@ -167,6 +176,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
             returnVar = "aux" + tempVarNum;
             tempVarNum++;
+
+            if(LevelVisit == 1){
+                returnVar = this.returnVar;
+            }
             
             code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
             if(LevelVisit!=1) auxConditionCode += code;
@@ -177,6 +190,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
             returnVar = "aux" + tempVarNum;
             tempVarNum++;
+
+            if(LevelVisit == 1){
+                returnVar = this.returnVar;
+            }
 
             //TODO: do we need auxConditionCode here??
             code += "\t\t" + returnVar + ".bool" + " :=.bool " + left + ".i32 <.bool " + right + ".i32;\n";
@@ -200,6 +217,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
+
+        if(LevelVisit == 1){
+            returnVar = this.returnVar;
+        }
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" +.i32 "+rightExpression+";\n";
         if (LevelVisit != 1)
@@ -225,6 +246,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
 
+        if(LevelVisit == 1){
+            returnVar = this.returnVar;
+        }
+
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" -.i32 "+rightExpression+";\n";
         if (LevelVisit != 1)
             auxConditionCode += code;        
@@ -248,6 +273,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
 
+        if(LevelVisit == 1){
+            returnVar = this.returnVar;
+        }
+
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" *.i32 "+rightExpression+";\n";
         if (LevelVisit != 1)
             auxConditionCode += code;
@@ -270,6 +299,10 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
 
         String returnVar = "aux" + tempVarNum;
         tempVarNum++;
+
+        if(LevelVisit == 1){
+            returnVar = this.returnVar;
+        }
 
         code += "\t\t"+returnVar+".i32 :=.i32 "+leftExpression+" /.i32 "+rightExpression+";\n";
         if (LevelVisit != 1)
