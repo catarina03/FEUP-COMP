@@ -336,7 +336,7 @@ public class ExpressionVisitor extends AJmmVisitor<Analyser, String> {
         return returnVar;
     }
 
-
+    // TODO: ADAPT TOTALLY TO CONDITIONS, STILL HAS CODE FROM OLLIR PRODUCER
     private String dealWithDotMethodCall(JmmNode node, Analyser analyser){
         String returnVar="";
 
