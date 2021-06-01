@@ -1,0 +1,12 @@
+import ioPlus;
+class HelloWorld {
+    public static void main(String[] args) {
+           boolean b;
+           boolean a;
+
+           a = true;
+           b = false;
+           result = a && b || false;
+           //ioPlus.printResult(result);
+    }
+}

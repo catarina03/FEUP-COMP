@@ -73,13 +73,24 @@ public class BackendTest {
 
     @Test
     public void testAssignField() {
-        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorld/testAssignField.jmm"));
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorld/assignField.jmm"));
         System.out.println(result.getJasminCode());
 
         TestUtils.noErrors(result.getReports());
 
         var output = result.run();
-        assertEquals("Hello, World!", output.trim());
+        assertEquals("Result: 5", output.trim());
+    }
+
+    @Test
+    public void testBooleanExpression() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/helloWorld/booleanExpression.jmm"));
+        System.out.println(result.getJasminCode());
+
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("Result: ", output.trim());
     }
 
     @Test
@@ -267,7 +278,7 @@ public class BackendTest {
         TestUtils.noErrors(result.getReports());
 
         var output = result.run();
-        //assertEquals("Hello, World!", output.trim());
+        assertEquals("Result: 65", output.trim());
     }
 
 

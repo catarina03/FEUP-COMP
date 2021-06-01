@@ -127,7 +127,7 @@ public class Main implements JmmParser {
 
 			//Run
 			jasminResult.run();
-			JasminUtils.assemble(new File("Simple.j"), new File("../comp2021-2e"));
+			JasminUtils.assemble(new File("Simple.j"), new File("../comp2021-2e/Simple.class"));
 			
 		} catch(ParseException e) {
 			throw new RuntimeException("Error while parsing", e);

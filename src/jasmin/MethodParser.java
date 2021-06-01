@@ -115,11 +115,17 @@ public class MethodParser {
     }
 
     private void generateInvokeStatic(CallInstruction instruction) {
+        String arguments = "";
         for (int i = 0; i < instruction.getListOfOperands().size(); i++){
             loadStack(instruction.getListOfOperands().get(i));
+            arguments += TypeUtils.parseType(instruction.getListOfOperands().get(i).getType());
+
+            if (i+1 < instruction.getListOfOperands().size()){
+                arguments += ", ";
+            }
         }
         this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction. getSecondArg()).getLiteral().replaceAll(
-                "\"", "")+"()"+ TypeUtils
+                "\"", "")+"(" + arguments + ")"+ TypeUtils
                 .parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
         for (int i = 0; i < instruction.getListOfOperands().size(); i++){
             popStack();
@@ -232,21 +238,25 @@ public class MethodParser {
     private void generateAdd(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\tiadd\n";
+        popStack();
     }
 
     private void generateSub(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\tisub\n";
+        popStack();
     }
 
     private void generateMul(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\timul\n";
+        popStack();
     }
 
     private void generateDiv(Element rightSide){
         loadStack(rightSide);
         instructionsCode += "\t\tidiv\n";
+        popStack();
     }
 
     private void generateGetField(GetFieldInstruction instruction) {
@@ -349,7 +359,13 @@ public class MethodParser {
 
     private void generateIStore(int index){
         popStack();
-        this.instructionsCode += "\t\tistore_" + index + "\n";
+        if (index > 3 || index < 0){
+            this.instructionsCode += "\t\tistore " + index + "\n";
+        }
+        else{
+            this.instructionsCode += "\t\tistore_" + index + "\n";
+        }
+
     }
 
     private void generateAStore(int index){
@@ -364,7 +380,12 @@ public class MethodParser {
 
     private void generateIload(int index){
         putStack();
-        this.instructionsCode+="\t\tiload_"+index+"\n";
+        if (index > 3 || index < 0){
+            this.instructionsCode+="\t\tiload "+index+"\n";
+        }
+        else{
+            this.instructionsCode+="\t\tiload_"+index+"\n";
+        }
     }
 
     private void generateIConstant(int literal){

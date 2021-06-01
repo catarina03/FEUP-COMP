@@ -372,8 +372,12 @@ public class OllirProducer implements JmmVisitor {
                         Analyser analyser = new Analyser(table, reports);
                         ExpressionVisitor expressionVisitor = new ExpressionVisitor(this.currentMethodName);
                         expressionVisitor.tempVarNum = this.tempVarNum;
-                        expressionVisitor.visit(child, analyser);
+                        expressionVisitor.returnVar = node.get("ID");
+                        String returnVar = expressionVisitor.visit(child, analyser);
                         code += expressionVisitor.code;
+/*
+                        code += "\t\t" + node.get("ID") + "." + OllirUtils.getType(getNodeType(node)) + " :=." + OllirUtils.getType(getNodeType(node)) + " " + returnVar + "." + OllirUtils.getType(getNodeType(node)) + ";\n";
+*/
                         this.tempVarNum = expressionVisitor.tempVarNum;
                     }
                 }
