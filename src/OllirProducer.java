@@ -130,6 +130,7 @@ public class OllirProducer implements JmmVisitor {
 
         generateMainHeader(node);
         generateMainBody(node);
+        code += "\t\tret.V;\n";
         code += "\t}\n";
     }
 
@@ -684,8 +685,13 @@ public class OllirProducer implements JmmVisitor {
         //métodos DESTA CLASSE  invokevirtual
         if(table.getMethods().contains(node.get("DotMethodCall"))){
             if (node.getNumChildren() == 0) { // sem argumentos
-                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
-                        + "\").V;\n";
+                if(node.getParent().getOptional("ID").isPresent()){ //call sem this
+                    auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
+                            + "\").V;\n";
+                }else{  // call com this
+                    auxCode += "\t\tinvokevirtual(this, \"" + node.get("DotMethodCall")
+                            + "\").V;\n";
+                }
             } else {// com argumentos
                 auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
                 for (int i = 0; i < node.getNumChildren(); i++) {
@@ -697,9 +703,25 @@ public class OllirProducer implements JmmVisitor {
                             auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
-                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { //FIXME: check if correct compare to similar condition below
-                            auxCode += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")";
+                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { 
+                            code += "\t\taux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " :=."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " getfield(this, "
+                                    + node.getChildren().get(i).get("ID") + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                            auxCode += ", aux" + tempVarNum + "."
+                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            tempVarNum++;
+                        } else if (getNextSibling(node.getChildren().get(i)).isPresent() && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")){ //array access -> int arrays
+                            code += "\t\taux" + tempVarNum + ".i32 :=.i32 "
+                            + node.getChildren().get(i).get("ID") + "["
+                            + node.getChildren().get(i+1).getChildren().get(0).get("ID") + ".i32].i32;\n";
+
+                            auxCode += ", aux" + tempVarNum + ".i32";
+                            tempVarNum++;
+                            i++; //ignore the next kid cause its array access
+                        
                         } else {
                             auxCode += ", " + node.getChildren().get(i).get("ID") + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
@@ -758,6 +780,15 @@ public class OllirProducer implements JmmVisitor {
                             auxCode += ", aux" + tempVarNum + "."
                                     + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                             tempVarNum++;
+                        } else if (getNextSibling(node.getChildren().get(i)).isPresent()
+                                && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")) { // array access->int arrays
+                            code += "\t\taux" + tempVarNum + ".i32 :=.i32 " + node.getChildren().get(i).get("ID") + "["
+                                    + node.getChildren().get(i + 1).getChildren().get(0).get("ID") + ".i32].i32;\n";
+
+                            auxCode += ", aux" + tempVarNum + ".i32";
+                            tempVarNum++;
+                            i++; // ignore the next kid cause its array access
+                        
                         }else{
                             auxCode+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                         }
@@ -993,6 +1024,16 @@ public class OllirProducer implements JmmVisitor {
         for (int i = 1; i < parent.getNumChildren(); i++) {
             if (node.toString().equals(parent.getChildren().get(i).toString())) {
                 return Optional.of(parent.getChildren().get(i - 1));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<JmmNode> getNextSibling(JmmNode node) {
+        JmmNode parent = node.getParent();
+        for (int i = 0; i < parent.getNumChildren()-1; i++) {
+            if (node.toString().equals(parent.getChildren().get(i).toString())) {
+                return Optional.of(parent.getChildren().get(i + 1));
             }
         }
         return Optional.empty();
