@@ -115,11 +115,17 @@ public class MethodParser {
     }
 
     private void generateInvokeStatic(CallInstruction instruction) {
+        String arguments = "";
         for (int i = 0; i < instruction.getListOfOperands().size(); i++){
             loadStack(instruction.getListOfOperands().get(i));
+            arguments += TypeUtils.parseType(instruction.getListOfOperands().get(i).getType());
+
+            if (i+1 < instruction.getListOfOperands().size()){
+                arguments += ", ";
+            }
         }
         this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction. getSecondArg()).getLiteral().replaceAll(
-                "\"", "")+"()"+ TypeUtils
+                "\"", "")+"(" + arguments + ")"+ TypeUtils
                 .parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
         for (int i = 0; i < instruction.getListOfOperands().size(); i++){
             popStack();
