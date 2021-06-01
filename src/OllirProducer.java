@@ -687,135 +687,262 @@ public class OllirProducer implements JmmVisitor {
     private void generateDotMethodCall(JmmNode node, List<String> methodParameterNames, List<String> classFieldsNames){
         String auxCode="";
 
-        //métodos DESTA CLASSE  invokevirtual
-        if(table.getMethods().contains(node.get("DotMethodCall"))){
-            if (node.getNumChildren() == 0) { // sem argumentos
-                if(node.getParent().getOptional("ID").isPresent()){ //call sem this
-                    auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
-                            + "\").V;\n";
-                }else{  // call com this
-                    auxCode += "\t\tinvokevirtual(this, \"" + node.get("DotMethodCall")
-                            + "\").V;\n";
-                }
-            } else {// com argumentos
-                auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
-                for (int i = 0; i < node.getNumChildren(); i++) {
-                    // expression terminal with ID
-                    if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getOptional("ID").isPresent()) {
-                        if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
-                            int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
-                            auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+        boolean isAssignment = false;
+        if(getNextSibling(node).isPresent()
+                && getNextSibling(node).get().getKind().equals("VarAssignment")){
+            isAssignment = true;
+        }
 
-                        } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
-                            code += "\t\taux" + tempVarNum + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " :=."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " getfield(this, "
-                                    + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
-                            auxCode += ", aux" + tempVarNum + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
-                            tempVarNum++;
-                        } else if (getNextSibling(node.getChildren().get(i)).isPresent() && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")){ //array access -> int arrays
-                            code += "\t\taux" + tempVarNum + ".i32 :=.i32 "
-                                    + node.getChildren().get(i).get("ID") + "["
-                                    + node.getChildren().get(i+1).getChildren().get(0).get("ID") + ".i32].i32;\n";
-
-                            auxCode += ", aux" + tempVarNum + ".i32";
-                            tempVarNum++;
-                            i++; //ignore the next kid cause its array access
-                        
-                        } else {
-                            auxCode += ", " + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
-                        }
+        if(!isAssignment){
+            //métodos DESTA CLASSE  invokevirtual
+            if(table.getMethods().contains(node.get("DotMethodCall"))){
+                if (node.getNumChildren() == 0) { // sem argumentos
+                    if(node.getParent().getOptional("ID").isPresent()){ //call sem this
+                        auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
+                                + "\").V;\n";
+                    }else{  // call com this
+                        auxCode += "\t\tinvokevirtual(this, \"" + node.get("DotMethodCall")
+                                + "\").V;\n";
                     }
-                    // expression terminal withoug ID and a terminal kid
-                    else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getNumChildren() == 1
-                            && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
-                            && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
-                        auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
-                    } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getNumChildren() == 1
-                            && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
-                            && node.getChildren().get(i).getChildren().get(0).getNumChildren() == 1) { // terminal kids
-                        // with boolean
-                        // kids
-                        if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
-                                .equals("BooleanTrue")) {
-                            auxCode += ", 1.bool";
-                        } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
-                                .equals("BooleanFalse")) {
-                            auxCode += ", 0.bool";
-                        }
-                    }
-                }
-                auxCode += ").V;\n";
-            }
+                } else {// com argumentos
+                    auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
+                    for (int i = 0; i < node.getNumChildren(); i++) {
+                        // expression terminal with ID
+                        if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getOptional("ID").isPresent()) {
+                            if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
+                                int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
+                                auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
 
-        }else{ // metodos de OUTRAS CLASSES / length
+                            } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) {
+                                code += "\t\taux" + tempVarNum + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " :=."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + " getfield(this, "
+                                        + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                                auxCode += ", aux" + tempVarNum + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                                tempVarNum++;
+                            } else if (getNextSibling(node.getChildren().get(i)).isPresent() && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")){ //array access -> int arrays
+                                code += "\t\taux" + tempVarNum + ".i32 :=.i32 "
+                                        + node.getChildren().get(i).get("ID") + "["
+                                        + node.getChildren().get(i+1).getChildren().get(0).get("ID") + ".i32].i32;\n";
 
-            if(node.getNumChildren()==0){  //sem argumentos
-                if(node.get("DotMethodCall").equals("length")){
-                    auxCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength(" + getUpperSibling(node).get().get("ID") + ".array.i32).i32;\n";
-                    auxCode += "\t\t" + node.getParent().get("ID")+".i32 :=.i32 aux" + tempVarNum + ".i32;\n";
-                    tempVarNum++;
-                }else{
-                    auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
-                }
-            }else{//com argumentos
-                auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
-                for(int i=0; i<node.getNumChildren();i++){
-                    //expression terminal with ID
-                    if(node.getChildren().get(i).getKind().equals("ExpressionTerminal") && node.getChildren().get(i).getOptional("ID").isPresent()){
-                        if(methodParameterNames.contains(node.getChildren().get(i).get("ID"))){
-                            int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
-                            if(!node.getChildren().get(i).get("ID").equals("main")){ //Checks if static
-                                index++;
+                                auxCode += ", aux" + tempVarNum + ".i32";
+                                tempVarNum++;
+                                i++; //ignore the next kid cause its array access
+
+                            } else {
+                                auxCode += ", " + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
                             }
-                            auxCode += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
-
-                        }else if(classFieldsNames.contains(node.getChildren().get(i).get("ID"))){
-                            code += "\t\taux"+ tempVarNum + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i))) +" :=."+OllirUtils.getType(getNodeType(node.getChildren().get(i)))+" getfield(this, " + node.getChildren().get(i).get("ID") + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."+ OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
-                            auxCode += ", aux" + tempVarNum + "."
-                                    + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
-                            tempVarNum++;
-                        } else if (getNextSibling(node.getChildren().get(i)).isPresent()
-                                && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")) { // array access->int arrays
-                            code += "\t\taux" + tempVarNum + ".i32 :=.i32 " + node.getChildren().get(i).get("ID") + "["
-                                    + node.getChildren().get(i + 1).getChildren().get(0).get("ID") + ".i32].i32;\n";
-
-                            auxCode += ", aux" + tempVarNum + ".i32";
-                            tempVarNum++;
-                            i++; // ignore the next kid cause its array access
-                        
-                        }else{
-                            auxCode+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                        }
+                        // expression terminal withoug ID and a terminal kid
+                        else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren() == 1
+                                && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                                && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                            auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren() == 1
+                                && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                                && node.getChildren().get(i).getChildren().get(0).getNumChildren() == 1) { // terminal kids
+                            // with boolean
+                            // kids
+                            if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                    .equals("BooleanTrue")) {
+                                auxCode += ", 1.bool";
+                            } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                    .equals("BooleanFalse")) {
+                                auxCode += ", 0.bool";
+                            }
                         }
                     }
-                    //expression terminal withoug ID and a terminal kid
-                    else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal") &&
-                            node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
-                        auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
-                    }else if(node.getChildren().get(i).getKind().equals("ExpressionTerminal")
-                            && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
-                            && node.getChildren().get(i).getChildren().get(0).getNumChildren()==1){  //terminal kids with boolean kids
-                        if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")){
-                            auxCode += ", 1.bool";
-                        }else if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")){
-                            auxCode += ", 0.bool";
-                        }
-                    }
+                    auxCode += ").V;\n";
                 }
-                auxCode+=").V;\n";
+
+            }else{ // metodos de OUTRAS CLASSES / length
+
+                if(node.getNumChildren()==0){  //sem argumentos
+                    if(node.get("DotMethodCall").equals("length")){
+                        auxCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength(" + getUpperSibling(node).get().get("ID") + ".array.i32).i32;\n";
+                        auxCode += "\t\t" + node.getParent().get("ID")+".i32 :=.i32 aux" + tempVarNum + ".i32;\n";
+                        tempVarNum++;
+                    }else{
+                        auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
+                    }
+                }else{//com argumentos
+                    auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
+                    for(int i=0; i<node.getNumChildren();i++){
+                        //expression terminal with ID
+                        if(node.getChildren().get(i).getKind().equals("ExpressionTerminal") && node.getChildren().get(i).getOptional("ID").isPresent()){
+                            if(methodParameterNames.contains(node.getChildren().get(i).get("ID"))){
+                                int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
+                                if(!node.getChildren().get(i).get("ID").equals("main")){ //Checks if static
+                                    index++;
+                                }
+                                auxCode += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+
+                            }else if(classFieldsNames.contains(node.getChildren().get(i).get("ID"))){
+                                code += "\t\taux"+ tempVarNum + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i))) +" :=."+OllirUtils.getType(getNodeType(node.getChildren().get(i)))+" getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."+ OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                                auxCode += ", aux" + tempVarNum + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                                tempVarNum++;
+                            } else if (getNextSibling(node.getChildren().get(i)).isPresent()
+                                    && getNextSibling(node.getChildren().get(i)).get().getKind().equals("ArrayAccess")) { // array access->int arrays
+                                code += "\t\taux" + tempVarNum + ".i32 :=.i32 " + node.getChildren().get(i).get("ID") + "["
+                                        + node.getChildren().get(i + 1).getChildren().get(0).get("ID") + ".i32].i32;\n";
+
+                                auxCode += ", aux" + tempVarNum + ".i32";
+                                tempVarNum++;
+                                i++; // ignore the next kid cause its array access
+
+                            }else{
+                                auxCode+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            }
+                        }
+                        //expression terminal withoug ID and a terminal kid
+                        else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal") &&
+                                node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                            auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        }else if(node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                                && node.getChildren().get(i).getChildren().get(0).getNumChildren()==1){  //terminal kids with boolean kids
+                            if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")){
+                                auxCode += ", 1.bool";
+                            }else if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")){
+                                auxCode += ", 0.bool";
+                            }
+                        }
+                    }
+                    auxCode+=").V;\n";
+                }
             }
         }
+        else{
+            if(table.getMethods().contains(node.get("DotMethodCall"))){
+                if (node.getNumChildren() == 0) { // sem argumentos
+                    JmmNode currentClassVar = getUpperSibling(node).get();
+                    if (currentClassVar.getNumChildren() > 0){
+                        if(currentClassVar.getChildren().get(0).getKind().equals("Terminal")){
+                            if(currentClassVar.getChildren().get(0).getChildren().get(0).getKind().equals("This")){
+                                auxCode += "\t\t" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent())) + " :=." + OllirUtils.getType(getNodeType(node.getParent())) + " invokevirtual(this" + ", \"" + node.get("DotMethodCall")
+                                        + "\")."+ OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName()) + ";\n";
+                            }
+                        }
+                    }
+                    else{
+                        boolean isNotThis = false;
+                        for (var localVar : table.getLocalVariables(currentMethodName)){
+                            if(localVar.getName().equals(currentClassVar.get("ID"))){
+                                auxCode += "\t\t" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent())) + " :=." + OllirUtils.getType(getNodeType(node.getParent())) + " invokevirtual(" + localVar.getName() + "." + table.getClassName() + ", \"" + node.get("DotMethodCall")
+                                        + "\")."+ OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName()) + ";\n";
+                            }
+                        }
+                    }
+
+                } else {// com argumentos
+                    auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
+                    for (int i = 0; i < node.getNumChildren(); i++) {
+                        // expression terminal with ID
+                        if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getOptional("ID").isPresent()) {
+                            if (methodParameterNames.contains(node.getChildren().get(i).get("ID"))) {
+                                int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
+                                auxCode += ", $" + index + "." + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+
+                            } else if (classFieldsNames.contains(node.getChildren().get(i).get("ID"))) { //FIXME: check if correct compare to similar condition below
+                                auxCode += ", getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")";
+                            } else {
+                                auxCode += ", " + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            }
+                        }
+                        // expression terminal withoug ID and a terminal kid
+                        else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren() == 1
+                                && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                                && node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                            auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        } else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren() == 1
+                                && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                                && node.getChildren().get(i).getChildren().get(0).getNumChildren() == 1) { // terminal kids
+                            // with boolean
+                            // kids
+                            if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                    .equals("BooleanTrue")) {
+                                auxCode += ", 1.bool";
+                            } else if (node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind()
+                                    .equals("BooleanFalse")) {
+                                auxCode += ", 0.bool";
+                            }
+                        }
+                    }
+                    auxCode += ").V;\n";
+                }
+
+            }else{ // metodos de OUTRAS CLASSES / length
+
+                if(node.getNumChildren()==0){  //sem argumentos
+                    if(node.get("DotMethodCall").equals("length")){
+                        auxCode += "\t\taux" + tempVarNum + ".i32 :=.i32 arraylength(" + getUpperSibling(node).get().get("ID") + ".array.i32).i32;\n";
+                        auxCode += "\t\t" + node.getParent().get("ID")+".i32 :=.i32 aux" + tempVarNum + ".i32;\n";
+                        tempVarNum++;
+                    }else{
+                        auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\").V;\n";
+                    }
+                }else{//com argumentos
+                    auxCode += "\t\tinvokestatic(" + node.getParent().get("ID")+ ", \""+node.get("DotMethodCall")+"\"";
+                    for(int i=0; i<node.getNumChildren();i++){
+                        //expression terminal with ID
+                        if(node.getChildren().get(i).getKind().equals("ExpressionTerminal") && node.getChildren().get(i).getOptional("ID").isPresent()){
+                            if(methodParameterNames.contains(node.getChildren().get(i).get("ID"))){
+                                int index = methodParameterNames.indexOf(node.getChildren().get(i).get("ID"));
+                                if(!node.getChildren().get(i).get("ID").equals("main")){ //Checks if static
+                                    index++;
+                                }
+                                auxCode += ", $"+index+"." + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+
+                            }else if(classFieldsNames.contains(node.getChildren().get(i).get("ID"))){
+                                code += "\t\taux"+ tempVarNum + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i))) +" :=."+OllirUtils.getType(getNodeType(node.getChildren().get(i)))+" getfield(this, " + node.getChildren().get(i).get("ID") + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ")."+ OllirUtils.getType(getNodeType(node.getChildren().get(i))) + ";\n";
+                                auxCode += ", aux" + tempVarNum + "."
+                                        + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                                tempVarNum++;
+                            }else{
+                                auxCode+=", "+node.getChildren().get(i).get("ID") + "." + OllirUtils.getType(getNodeType(node.getChildren().get(i)));
+                            }
+                        }
+                        //expression terminal withoug ID and a terminal kid
+                        else if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal") &&
+                                node.getChildren().get(i).getChildren().get(0).getOptional("Integer").isPresent()) {
+                            auxCode += ", " + node.getChildren().get(i).getChildren().get(0).get("Integer") + ".i32";
+                        }else if(node.getChildren().get(i).getKind().equals("ExpressionTerminal")
+                                && node.getChildren().get(i).getNumChildren()==1 && node.getChildren().get(i).getChildren().get(0).getKind().equals("Terminal")
+                                && node.getChildren().get(i).getChildren().get(0).getNumChildren()==1){  //terminal kids with boolean kids
+                            if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanTrue")){
+                                auxCode += ", 1.bool";
+                            }else if(node.getChildren().get(i).getChildren().get(0).getChildren().get(0).getKind().equals("BooleanFalse")){
+                                auxCode += ", 0.bool";
+                            }
+                        }
+                    }
+                    auxCode+=").V;\n";
+                }
+            }
+
+        }
+
         code += auxCode;
     }
 
