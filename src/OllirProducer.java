@@ -699,10 +699,10 @@ public class OllirProducer implements JmmVisitor {
                 if (node.getNumChildren() == 0) { // sem argumentos
                     if(node.getParent().getOptional("ID").isPresent()){ //call sem this
                         auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall")
-                                + "\").V;\n";
+                                + "\")."+ OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName()) + ";\n";
                     }else{  // call com this
                         auxCode += "\t\tinvokevirtual(this, \"" + node.get("DotMethodCall")
-                                + "\").V;\n";
+                                + "\")."+ OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName()) + ";\n";
                     }
                 } else {// com argumentos
                     auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
@@ -760,7 +760,7 @@ public class OllirProducer implements JmmVisitor {
                             }
                         }
                     }
-                    auxCode += ").V;\n";
+                    auxCode += ")."+ OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName()) + ";\n";
                 }
 
             }else{ // metodos de OUTRAS CLASSES / length
@@ -847,7 +847,7 @@ public class OllirProducer implements JmmVisitor {
                     }
 
                 } else {// com argumentos
-                    auxCode += "\t\tinvokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
+                    auxCode += "\t\t" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent())) + " :=." + OllirUtils.getType(getNodeType(node.getParent()))+ " invokevirtual(" + node.getParent().get("ID") + "." + OllirUtils.getType(getNodeType(node.getParent()))+ ", \"" + node.get("DotMethodCall") + "\"";
                     for (int i = 0; i < node.getNumChildren(); i++) {
                         // expression terminal with ID
                         if (node.getChildren().get(i).getKind().equals("ExpressionTerminal")
@@ -886,7 +886,7 @@ public class OllirProducer implements JmmVisitor {
                             }
                         }
                     }
-                    auxCode += ").V;\n";
+                    auxCode += ")."+ OllirUtils.getType(table.getMethod(node.get("DotMethodCall")).getReturnType().getName()) + ";\n";
                 }
 
             }else{ // metodos de OUTRAS CLASSES / length
