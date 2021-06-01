@@ -105,6 +105,9 @@ public class MethodParser {
             case invokespecial:
                 generateInvokeSpecial(instruction);
                 break;
+            case invokevirtual:
+                generateInvokeVirtual(instruction);
+                break;
             case NEW:
                 generateNew(instruction);
                 //storeStack(instruction.getFirstArg());
@@ -112,6 +115,42 @@ public class MethodParser {
             default:
                 addComment("Missing CALL " + instruction.getInvocationType());
         }
+    }
+
+    private void generateInvokeVirtual(CallInstruction instruction){
+        //loadStack(instruction.getFirstArg());
+        generateAload(0);
+
+        String arguments = "";
+        for (int i = 0; i < instruction.getListOfOperands().size(); i++){
+            loadStack(instruction.getListOfOperands().get(i));
+            arguments += TypeUtils.parseType(instruction.getListOfOperands().get(i).getType());
+
+            if (i+1 < instruction.getListOfOperands().size()){
+                arguments += ", ";
+            }
+        }
+        String returnType = TypeUtils.parseElementType( instruction.getReturnType().getTypeOfElement());
+        for (var classMethod : classUnit.getMethods()){
+            if (classMethod.getMethodName().equals(((LiteralElement) instruction.getSecondArg()).getLiteral().replaceAll("\"", "")) && classMethod.getParams().size() == instruction.getListOfOperands().size()){
+                returnType = TypeUtils.parseElementType(classMethod.getReturnType().getTypeOfElement());
+            }
+        }
+
+        if (instruction.getFirstArg().getType() instanceof ClassType){
+            this.instructionsCode += "\t\tinvokevirtual "+ ((ClassType) instruction.getFirstArg().getType()).getName()+"/"+((LiteralElement) instruction.getSecondArg()).getLiteral().replaceAll(
+                    "\"", "")+"(" + arguments + ")"+ returnType +"\n";
+        }
+        else {
+            this.instructionsCode += "\t\tinvokevirtual "+ ((Operand) instruction.getFirstArg()).getName()+"/"+((LiteralElement) instruction.getSecondArg()).getLiteral().replaceAll(
+                    "\"", "")+"(" + arguments + ")"+ returnType +"\n";
+        }
+
+        for (int i = 0; i < instruction.getListOfOperands().size(); i++){
+            popStack();
+        }
+        this.instructionsCode += "\t\tpop\n";
+        popStack();
     }
 
     private void generateInvokeStatic(CallInstruction instruction) {
@@ -124,7 +163,7 @@ public class MethodParser {
                 arguments += ", ";
             }
         }
-        this.instructionsCode += "\t\tinvokestatic "+((Operand) instruction.getFirstArg()).getName()+"."+((LiteralElement) instruction. getSecondArg()).getLiteral().replaceAll(
+        this.instructionsCode += "\t\tinvokestatic "+ ((Operand) instruction.getFirstArg()).getName() +"/"+((LiteralElement) instruction.getSecondArg()).getLiteral().replaceAll(
                 "\"", "")+"(" + arguments + ")"+ TypeUtils
                 .parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
         for (int i = 0; i < instruction.getListOfOperands().size(); i++){
@@ -134,42 +173,43 @@ public class MethodParser {
 
     private void generateInvokeSpecial(CallInstruction instruction) {
 
+
         if(((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getClassName()) || ((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getSuperClass()) ){
             //this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
             loadStack(this.method.getParam(0));
         }
         else{
+            var name= ((Operand) instruction.getFirstArg()).getName();
+            var variable = this.method.getVarTable().get(name);
+
             loadStack(instruction.getFirstArg());
         }
-        if(classUnit.getSuperClass()==null){
-            this.instructionsCode += "\t\tinvokespecial java/lang/Object/<init>()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
-            /*
-            if(!this.method.isConstructMethod()){
-                storeStack((instruction.getFirstArg()));
-            }
 
-             */
-            return;
-        }else{
-            this.instructionsCode += "\t\tinvokespecial "+ this.classUnit.getSuperClass() +"()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n"; 
-            return; 
+        if (method.isConstructMethod()){
+            if(classUnit.getSuperClass()==null){
+                this.instructionsCode += "\t\tinvokespecial java/lang/Object/<init>()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
+                return;
+            }else{
+                this.instructionsCode += "\t\tinvokespecial "+ this.classUnit.getSuperClass() +"()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
+                return;
+            }
         }
+        else{
+            this.instructionsCode += "\t\tinvokespecial " + this.classUnit.getClassName() + "/<init>()"+ TypeUtils.parseElementType(instruction.getReturnType().getTypeOfElement())+"\n";
+            return;
+        }
+
     }
 
     private void generateNew(CallInstruction instruction){
-        //loadStack(instruction.getFirstArg());
         putStack();
+        this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
         if(((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getClassName()) || ((Operand) instruction.getFirstArg()).getName().equals(this.method.getOllirClass().getSuperClass()) ){
-            this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
             storeStack(this.method.getParam(0));
         }
         else{
-            this.instructionsCode += "\t\tnew " + ((Operand) instruction.getFirstArg()).getName() + "\n";
-            //this.instructionsCode += "\t\tdup\n";
-            //loadStack(instruction.getFirstArg());
             storeStack(instruction.getFirstArg());
         }
-
     }
 
     private void generateReturn(ReturnInstruction instruction){
@@ -202,6 +242,8 @@ public class MethodParser {
             case CALL:
                 switch (instruction.getTypeOfAssign().getTypeOfElement()){
                     case OBJECTREF:
+                        generateCall((CallInstruction) instruction.getRhs());
+                        //storeStack(instruction.getDest());
                         break;
                     default:
                         addComment("ASSIGN TYPE CALL INSTRUCTION TYPE " + instruction.getTypeOfAssign().getTypeOfElement() + " IS MISSING");
@@ -299,18 +341,6 @@ public class MethodParser {
                 generateAload(0);
             }
             else{
-                /*
-                if(variable.getScope().equals(VarScope.PARAMETER)){
-                    if (variable.getVarType().getTypeOfElement().equals(ElementType.INT32)){
-                        generateIload(variable.getVirtualReg());
-                    }
-                    else{
-                        addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
-                    }
-                }
-
-                 */
-
                 if(variable.getScope().equals(VarScope.LOCAL) || variable.getScope().equals(VarScope.PARAMETER)){
                     switch (variable.getVarType().getTypeOfElement()){
                         case INT32:
@@ -327,12 +357,8 @@ public class MethodParser {
                         default:
                             addComment("LOAD TYPE " + variable.getVarType() + " NOT IMPLEMENTED");
                     }
-
-
                 }
             }
-
-
         }
     }
 

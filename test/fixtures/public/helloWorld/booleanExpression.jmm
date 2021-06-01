@@ -7,6 +7,11 @@ class HelloWorld {
            a = true;
            b = false;
            result = a && b || false;
-           //ioPlus.printResult(result);
+           if(result){
+               ioPlus.printResult(1);
+           }
+           else{
+               ioPlus.printResult(0);
+           }
     }
 }

@@ -36,6 +36,20 @@ public class BackendTest {
 
 
     @Test
+    public void testPrintAdd() {
+        var ollirResult = TestUtils.optimize(SpecsIo.getResource("fixtures/public/helloWorld/printAdd.jmm"));
+        System.out.println(ollirResult.getSymbolTable());
+        var result = TestUtils.backend(ollirResult);
+
+        System.out.println(result.getJasminCode());
+
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("Result: 3", output.trim());
+    }
+
+    @Test
     public void testPrintAddResult() {
         var ollirResult = TestUtils.optimize(SpecsIo.getResource("fixtures/public/helloWorld/printAddResult.jmm"));
         System.out.println(ollirResult.getSymbolTable());
@@ -46,7 +60,7 @@ public class BackendTest {
         TestUtils.noErrors(result.getReports());
 
         var output = result.run();
-        assertEquals("Hello, World!", output.trim());
+        assertEquals("Result: 3", output.trim());
     }
 
     @Test
