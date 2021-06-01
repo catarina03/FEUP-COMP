@@ -39,8 +39,12 @@ public class AnalysisStage implements JmmAnalysis {
         SymbolTableVisitor testVisitor = new SymbolTableVisitor();
         testVisitor.visit(node, symbolTable);
 
-
         Analyser analyser = new Analyser(symbolTable, reports);
+
+        CheckErrorsVisitor checkErrorsVisitor = new CheckErrorsVisitor();
+        checkErrorsVisitor.visit(node, analyser);
+
+        System.out.println(analyser.getReports());
 
 
         return new JmmSemanticsResult(node, analyser.getSymbolTable(), analyser.getReports());

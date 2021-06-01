@@ -25,7 +25,7 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
-
+/*
     @Test
     public void semanticTestBinopIncomp() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/binop_incomp.jmm");
@@ -34,6 +34,8 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
+ */
+
     @Test
     public void semanticTestFuncNotFound() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm");
@@ -41,12 +43,15 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
+    /*
     @Test
     public void semanticTestSimpleLength() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/simple_length.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
+
+
 
     @Test
     public void semanticTestVarExpIncomp() {
@@ -55,6 +60,9 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
+     */
+
+    /*
     @Test
     public void semanticTestVarLitIncomp() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/var_lit_incomp.jmm");
@@ -62,12 +70,15 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
+
     @Test
     public void semanticTestVarUndef() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/var_undef.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
+
+     */
 
     //pass
     @Test
@@ -101,6 +112,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    /*
     //pass
     @Test
     public void semanticBooleanExpressions() {
@@ -108,6 +120,7 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+    */
 
     //pass
     @Test
@@ -181,6 +194,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    /*
     //pass
     @Test
     public void semanticCustom() {
@@ -188,6 +202,8 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+
+
 
     //pass
     @Test
@@ -197,6 +213,8 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+
+
     //pass
     @Test
     public void testFileLife() {
@@ -204,6 +222,8 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+
+
 
     //pass
     @Test
@@ -213,6 +233,9 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+     */
+
+    /*
     //pass
     @Test
     public void testIfNotTest() {
@@ -220,6 +243,7 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+
 
     //pass
     @Test
@@ -229,6 +253,8 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+     */
+
     //pass
     @Test
     public void testFileWhileAndIF() {
@@ -237,6 +263,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    /*
     //pass
     @Test
     public void testWhileTest() {
@@ -244,6 +271,8 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+
+     */
 
     //pass
     @Test
@@ -253,6 +282,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    /*
     //pass
     @Test
     public void testFileQuickSort() {
@@ -260,4 +290,6 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
+
+     */
 }
