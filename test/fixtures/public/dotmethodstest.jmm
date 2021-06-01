@@ -16,8 +16,6 @@ class HelloWorld {
         a = new HelloWorld();
 
         ioPlus.printHelloWorld();
-        // ioPlus.printHelloWorld(flag);
-        // ioPlus.printHelloWorld(args);
         ioPlus.printHelloWorld(c,b,result);
 
         a.get();

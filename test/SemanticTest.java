@@ -4,15 +4,13 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class SemanticTest {
-    /*
+
     @Test
     public void semanticTestArrIndexNotInt() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/arr_index_not_int.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
-
-
 
     @Test
     public void semanticTestArrSizeNotInt() {
@@ -21,21 +19,13 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
-     */
-
-
-//TODO: ESTE FUNCIONA
-    /*
     @Test
     public void semanticTestBadArguments() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/badArguments.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
-     */
 
-
-    /*
     @Test
     public void semanticTestBinopIncomp() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/binop_incomp.jmm");
@@ -43,10 +33,6 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
-     */
-
-    //TODO: ESTES 2 ESTAO BEM
-/*
     @Test
     public void semanticTestFuncNotFound() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm");
@@ -60,11 +46,7 @@ public class SemanticTest {
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.mustFail(result.getReports());
     }
- */
 
-
-
-/*
     @Test
     public void semanticTestVarExpIncomp() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/var_exp_incomp.jmm");
@@ -79,7 +61,6 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
-
     @Test
     public void semanticTestVarUndef() {
         String jmmParser = SpecsIo.getResource("fixtures/public/fail/semantic/var_undef.jmm");
@@ -87,7 +68,7 @@ public class SemanticTest {
         TestUtils.mustFail(result.getReports());
     }
 
-
+    //pass
     @Test
     public void semanticTestSimple() {
         String jmmParser = SpecsIo.getResource("fixtures/public/Simple.jmm");
@@ -95,8 +76,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
-
-/* TODO NULL PNTER
+    //pass
     @Test
     public void semanticTestMonteCarloPi() {
         String jmmParser = SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm");
@@ -104,9 +84,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
- */
-
-/*
+    //pass
     @Test
     public void semanticTestFindMaximum() {
         String jmmParser = SpecsIo.getResource("fixtures/public/FindMaximum.jmm");
@@ -114,11 +92,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
- */
-
-
-
-/*
+    //pass
     @Test
     public void semanticTestHello() {
         String jmmParser = SpecsIo.getResource("fixtures/public/HelloWorld.jmm");
@@ -126,10 +100,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
- */
-
-
-/*
+    //pass
     @Test
     public void testFileLife() {
         String jmmParser = SpecsIo.getResource("fixtures/public/Life.jmm");
@@ -137,10 +108,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
- */
-
-
-/*
+    //pass
     @Test
     public void testFileTicTacToe() {
         String jmmParser = SpecsIo.getResource("fixtures/public/TicTacToe.jmm");
@@ -148,9 +116,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
- */
-
-/*
+    //pass
     @Test
     public void testFileWhileAndIF() {
         String jmmParser = SpecsIo.getResource("fixtures/public/WhileAndIF.jmm");
@@ -158,9 +124,7 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
- */
-
-/*
+    //pass
     @Test
     public void testFileLazysort() {
         String jmmParser = SpecsIo.getResource("fixtures/public/Lazysort.jmm");
@@ -168,14 +132,11 @@ public class SemanticTest {
         TestUtils.noErrors(result.getReports());
     }
 
-
+    //pass
     @Test
     public void testFileQuickSort() {
         String jmmParser = SpecsIo.getResource("fixtures/public/QuickSort.jmm");
         JmmSemanticsResult result = TestUtils.analyse(jmmParser);
         TestUtils.noErrors(result.getReports());
     }
-*/
-
-
 }

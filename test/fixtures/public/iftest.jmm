@@ -11,7 +11,7 @@ class HelloWorld {
 
         if(true && false){
             a = 6;
-        } else{
+        } else {
             a = 7;
         }
 
